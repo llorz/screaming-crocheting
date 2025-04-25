@@ -171,7 +171,7 @@
         }
         
         input[type="number"] {
-            width: 50px;
+            width: 30px;
         }
         
         input[type="range"] {
@@ -267,20 +267,19 @@
         <div class="control-panel">
             <!-- Canvas Controls -->
             <div class="control-group">
-                <h3>Canvas Setup</h3>
+                <h3>Grid Setup</h3>
                 <div class="input-group">
-                    <span>Grid:</span>
                     <input type="number" id="grid-width" min="8" max="128" value="64">
                     <span>x</span>
                     <input type="number" id="grid-height" min="8" max="128" value="64">
-                    <button id="resize-grid">Apply</button>
-                </div>
-                <div class="button-group">
-                    <button id="reset-all" class="primary">Reset All</button>
+                    <button id="resize-grid">set size</button>
                 </div>
                 <div class="input-group">
                     <input type="color" id="bg-color-picker" value="#ffffff">
-                    <button id="apply-bg-color">Set Background</button>
+                    <button id="apply-bg-color">set color</button>
+                </div>
+                <div class="button-group">
+                    <button id="reset-all" class="primary">Reset All</button>
                 </div>
             </div>
 
