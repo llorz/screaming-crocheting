@@ -1098,6 +1098,16 @@ class CrochetPatternTool {
         }
         document.getElementById('next-row-color').textContent = nextRowColor;
         document.getElementById('next-row-color').style.color = nextRowColor;
+
+        // Check if colors don't match and play warning
+        if (nextRowColor !== "N/A" && currentColor !== nextRowColor) {
+            const speech = new SpeechSynthesisUtterance("Switch! Switch!");
+            speech.voice = window.speechSynthesis.getVoices().find(voice => voice.name === "Grandma (French (Canada))");
+
+            speech.rate = 1.2; // Slightly faster speech
+            speech.pitch = 5.8; // Slightly higher pitch
+            window.speechSynthesis.speak(speech);
+        }
         
         // Update stitch visualization
         this.updateStitchVisualization();
