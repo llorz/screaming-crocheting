@@ -168,7 +168,8 @@ class CrochetPatternTool {
             5: colors.prev,
 
             // Default to background color
-            1: '#000000'
+            1: '#000000',
+            0: '#f0f0f0'
         };
         
         // Fill image data based on downsampled pattern
