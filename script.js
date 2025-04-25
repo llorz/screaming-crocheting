@@ -1035,6 +1035,7 @@ class CrochetPatternTool {
         this.render();
         this.updatePaletteUI();
         this.updateZoomPreview();
+        this.currentStitch = { x: 0, y: 0 };
     }
     
     undo() {
