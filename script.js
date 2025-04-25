@@ -982,6 +982,18 @@ class CrochetPatternTool {
                 );
             }
         }
+
+        // Highlight current stitch position
+        if (this.currentStitch) {
+            this.ctx.strokeStyle = '#fb6f92'; // Pink color for highlight
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(
+                this.currentStitch.x * this.cellSize,
+                this.currentStitch.y * this.cellSize,
+                this.cellSize,
+                this.cellSize
+            );
+        }
     }
     
     resizeGrid() {
