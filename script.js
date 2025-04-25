@@ -153,10 +153,12 @@ class CrochetPatternTool {
         
         // Create off-screen canvas at target size
         const patternCanvas = document.createElement('canvas');
-        patternCanvas.width = targetWidth;
-        patternCanvas.height = targetHeight;
+        // Make intermediate canvas larger for smoother downscaling
+        patternCanvas.width = targetWidth * 4;
+        patternCanvas.height = targetHeight * 4;
         const patternCtx = patternCanvas.getContext('2d');
-        const imageData = patternCtx.createImageData(targetWidth, targetHeight);
+        patternCtx.imageSmoothingEnabled = true; // Enable antialiasing
+        const imageData = patternCtx.createImageData(patternCanvas.width, patternCanvas.height);
         const data = imageData.data;
         
         // Color mapping - modify these as needed
@@ -172,16 +174,16 @@ class CrochetPatternTool {
         };
         
         // Fill image data based on downsampled pattern
-        for (let y = 0; y < targetHeight; y++) {
-            for (let x = 0; x < targetWidth; x++) {
+        for (let y = 0; y < patternCanvas.height; y++) {
+            for (let x = 0; x < patternCanvas.width; x++) {
                 // Sample from original matrix using scaled coordinates
-                const srcX = Math.floor(x * scaleX);
-                const srcY = Math.floor(y * scaleY);
+                const srcX = Math.floor(x * scaleX / 4);
+                const srcY = Math.floor(y * scaleY / 4);
                 const patternValue = this.stitchMatrix[srcY][srcX];
                 
                 const color = colorMap[patternValue] || this.backgroundColor;
                 const [r, g, b] = this.hexToRgb(color);
-                const idx = (y * targetWidth + x) * 4;
+                const idx = (y * patternCanvas.width + x) * 4;
                 
                 data[idx] = r;     // R
                 data[idx + 1] = g; // G
@@ -190,16 +192,29 @@ class CrochetPatternTool {
             }
         }
         
-        // Put the image data and scale it
+        // Put the image data and scale it down smoothly
         patternCtx.putImageData(imageData, 0, 0);
+        
+        // Create a second canvas for final smooth downscaling
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = targetWidth;
+        finalCanvas.height = targetHeight;
+        const finalCtx = finalCanvas.getContext('2d');
+        finalCtx.imageSmoothingEnabled = true;
+        finalCtx.imageSmoothingQuality = 'high';
+        
+        // Draw downscaled version with antialiasing
+        finalCtx.drawImage(patternCanvas, 0, 0, targetWidth, targetHeight);
+        
+        // Clear and draw final result
         this.stitchCtx.clearRect(0, 0, this.stitchCanvas.width, this.stitchCanvas.height);
-        this.stitchCtx.imageSmoothingEnabled = false;
+        this.stitchCtx.imageSmoothingEnabled = true;
+        this.stitchCtx.imageSmoothingQuality = 'high';
         
         this.stitchCtx.drawImage(
-            patternCanvas,
+            finalCanvas,
             0, 0, this.stitchCanvas.width, this.stitchCanvas.height
         );
-        
     }
 
     // updateStitchVisualization() {
