@@ -101,7 +101,7 @@
         
         #stitch-canvas {
             aspect-ratio: 1/1;
-            max-height: 300px;
+            /* max-height: 300px; */
         }
         
         .canvas-label {
@@ -344,8 +344,11 @@
         
         <!-- Right Panel -->
         <div class="zoom-container">
+            <div class="canvas-label">Current Stitch Pattern</div>
+            <canvas id="stitch-canvas"></canvas>
+<!-- 
             <div class="canvas-label">Zoom Preview (4x)</div>
-            <canvas id="zoom-canvas"></canvas>
+            <canvas id="zoom-canvas"></canvas> -->
             
             <div class="control-group">
                 <h3>Navigation</h3>
@@ -360,22 +363,7 @@
                 </div>
             </div>
             
-            <div class="canvas-label">Current Stitch Pattern</div>
-            <canvas id="stitch-canvas"></canvas>
-            <div class="heatmap-legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #fb6f92;"></div>
-                    <span>Current Stitch</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #a7c957;"></div>
-                    <span>Next Row</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #f0f0f0;"></div>
-                    <span>Background</span>
-                </div>
-            </div>
+            
         </div>
     </div>
 
