@@ -347,6 +347,15 @@ class CrochetPatternTool {
             this.activeColorIndex = 0; // Background color
         });
         
+        document.getElementById('update-colors').addEventListener('click', async () => {
+            if (!this.loadedImage) {
+                alert('Please load an image first');
+                return;
+            }
+            const colorCount = parseInt(document.getElementById('color-count').value) || 5;
+            await this.extractAndUpdateColors(colorCount);
+        });
+
         // Brush size
         const brushSizeInput = document.getElementById('brush-size');
         brushSizeInput.addEventListener('input', (e) => {
@@ -467,6 +476,103 @@ class CrochetPatternTool {
             paletteContainer.appendChild(swatch);
         });
     }
+
+    async getDominantColors(image, count) {
+        // Create temporary canvas
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = Math.min(image.width, 100);
+        tempCanvas.height = Math.min(image.height, 100);
+        
+        // Draw scaled-down version for faster processing
+        tempCtx.drawImage(image, 0, 0, tempCanvas.width, tempCanvas.height);
+        
+        // Get pixel data
+        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        const pixels = imageData.data;
+        
+        // Convert to array of [r,g,b] values
+        const pixelArray = [];
+        for (let i = 0; i < pixels.length; i += 4) {
+            // Skip transparent/very dark pixels
+            if (pixels[i+3] > 128 && 
+                !(pixels[i] < 10 && pixels[i+1] < 10 && pixels[i+2] < 10)) {
+                pixelArray.push([pixels[i], pixels[i+1], pixels[i+2]]);
+            }
+        }
+        
+        // Get most distinct colors in RGB space
+        const colors = this.getMostDistinctColors(pixelArray, count);
+        
+        // Convert to hex and return
+        return colors.map(color => this.rgbToHex(color[0], color[1], color[2]));
+    }
+    
+    kMeansClustering(points, k, maxIterations = 10) {
+        // Initialize centroids randomly
+        let centroids = [];
+        for (let i = 0; i < k; i++) {
+            centroids.push(points[Math.floor(Math.random() * points.length)]);
+        }
+        
+        for (let iter = 0; iter < maxIterations; iter++) {
+            // Assign each point to nearest centroid
+            const clusters = Array(k).fill().map(() => []);
+            
+            points.forEach(point => {
+                let minDist = Infinity;
+                let clusterIndex = 0;
+                
+                centroids.forEach((centroid, i) => {
+                    const dist = this.colorDistance(point, centroid);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        clusterIndex = i;
+                    }
+                });
+                
+                clusters[clusterIndex].push(point);
+            });
+            
+            // Update centroids
+            let changed = false;
+            centroids = clusters.map(cluster => {
+                if (cluster.length === 0) {
+                    return points[Math.floor(Math.random() * points.length)];
+                }
+                
+                const newCentroid = [0, 0, 0];
+                cluster.forEach(point => {
+                    newCentroid[0] += point[0];
+                    newCentroid[1] += point[1];
+                    newCentroid[2] += point[2];
+                });
+                
+                newCentroid[0] = Math.round(newCentroid[0] / cluster.length);
+                newCentroid[1] = Math.round(newCentroid[1] / cluster.length);
+                newCentroid[2] = Math.round(newCentroid[2] / cluster.length);
+                
+                return newCentroid;
+            });
+        }
+        
+        return centroids;
+    }
+    
+    colorDistance(c1, c2) {
+        return Math.sqrt(
+            Math.pow(c1[0] - c2[0], 2) +
+            Math.pow(c1[1] - c2[1], 2) +
+            Math.pow(c1[2] - c2[2], 2)
+        );
+    }
+    
+    rgbToHex(r, g, b) {
+        return '#' + [r, g, b].map(x => {
+            const hex = x.toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        }).join('');
+    }
     
     getGridCoordinates(e) {
         const rect = this.canvas.getBoundingClientRect();
@@ -517,22 +623,137 @@ class CrochetPatternTool {
             }
         }
     }
-    
-    handleImageUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+
+    // Helper to get the most distinct colors
+    getMostDistinctColors(points, k) {
+        // Start with the color farthest from black (most vibrant)
+        let centroids = [points.reduce((max, p) => 
+            this.colorDistance([0,0,0], p) > this.colorDistance([0,0,0], max) ? p : max
+        )];
         
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const img = new Image();
-            img.onload = () => {
-                this.loadedImage = img;
-                this.processImage(img);
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
+        // Find remaining colors by maximizing minimum distance to existing centroids
+        while (centroids.length < k) {
+            let maxMinDist = -1;
+            let nextCentroid = null;
+            
+            // For each point, find its minimum distance to existing centroids
+            points.forEach(point => {
+                let minDist = Infinity;
+                centroids.forEach(centroid => {
+                    const dist = this.colorDistance(point, centroid);
+                    if (dist < minDist) minDist = dist;
+                });
+                
+                // Track the point with the maximum minimum distance
+                if (minDist > maxMinDist) {
+                    maxMinDist = minDist;
+                    nextCentroid = point;
+                }
+            });
+            
+            if (nextCentroid) {
+                centroids.push(nextCentroid);
+            } else {
+                // Fallback if no distinct color found
+                centroids.push(points[Math.floor(Math.random() * points.length)]);
+            }
+        }
+        
+        return centroids;
     }
+
+    // Improved color distance calculation (perceptual)
+    colorDistance(c1, c2) {
+        // Convert to Lab color space for better perceptual distance
+        const lab1 = this.rgbToLab(c1);
+        const lab2 = this.rgbToLab(c2);
+        
+        // Delta E 2000 formula (simplified)
+        return Math.sqrt(
+            Math.pow(lab1[0] - lab2[0], 2) +
+            Math.pow(lab1[1] - lab2[1], 2) +
+            Math.pow(lab1[2] - lab2[2], 2)
+        );
+    }
+
+    // RGB to Lab color space conversion
+    rgbToLab(rgb) {
+        let r = rgb[0] / 255;
+        let g = rgb[1] / 255;
+        let b = rgb[2] / 255;
+
+        // Convert to XYZ
+        r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
+        g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
+        b = b > 0.04045 ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+
+        r *= 100;
+        g *= 100;
+        b *= 100;
+
+        const x = r * 0.4124 + g * 0.3576 + b * 0.1805;
+        const y = r * 0.2126 + g * 0.7152 + b * 0.0722;
+        const z = r * 0.0193 + g * 0.1192 + b * 0.9505;
+
+        // Convert to Lab
+        let x2 = x / 95.047;
+        let y2 = y / 100.0;
+        let z2 = z / 108.883;
+
+        x2 = x2 > 0.008856 ? Math.pow(x2, 1/3) : 7.787 * x2 + 16/116;
+        y2 = y2 > 0.008856 ? Math.pow(y2, 1/3) : 7.787 * y2 + 16/116;
+        z2 = z2 > 0.008856 ? Math.pow(z2, 1/3) : 7.787 * z2 + 16/116;
+
+        return [
+            (116 * y2) - 16,
+            500 * (x2 - y2),
+            200 * (y2 - z2)
+        ];
+    }
+
+    async extractAndUpdateColors(colorCount) {
+        // Get dominant colors
+        const dominantColors = await this.getDominantColors(this.loadedImage, colorCount);
+        
+        // Update palette (keep background white)
+        this.palette = ['#FFFFFF', ...dominantColors];
+        this.activeColorIndex = 1; // Select first dominant color
+        
+        // Update UI
+        document.getElementById('color-picker').value = this.palette[1];
+        this.updatePaletteUI();
+        
+        // Re-process image with new palette
+        this.processImage(this.loadedImage);
+        
+        // Save state for undo
+        this.undoStack.push({
+            gridData: JSON.parse(JSON.stringify(this.gridData)),
+            palette: [...this.palette],
+            backgroundColor: this.backgroundColor
+        });
+        this.redoStack = [];
+    }
+    
+    
+    async handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const colorCount = parseInt(document.getElementById('color-count').value) || 5;
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        const img = new Image();
+        img.onload = async () => {
+            this.loadedImage = img;
+            await this.extractAndUpdateColors(colorCount);
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+    
     
     processImage(img) {
         // Create temporary canvas to process image
