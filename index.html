@@ -20,9 +20,9 @@
                 "title title title"
                 "controls canvas zoom"
                 "controls stitch stitch";
-            grid-template-columns: 300px 1fr 300px;
+            grid-template-columns: 220px 1fr 500px;
             grid-gap: 20px;
-            max-width: 1400px;
+            max-width: 1500px;
             margin: 0 auto;
         }
         
@@ -41,23 +41,24 @@
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         
         .control-group {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .control-group:last-child {
-            border-bottom: none;
+            padding: 12px;
+            border-radius: 6px;
+            background-color: #f8f8f8;
         }
         
         .control-group h3 {
             margin-top: 0;
+            margin-bottom: 12px;
             color: #555;
             font-size: 1.1em;
-            margin-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 6px;
         }
         
         .canvas-container, .zoom-container, .stitch-container {
@@ -65,16 +66,19 @@
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
         }
         
         .canvas-container {
             grid-area: canvas;
+            display: flex;
+            flex-direction: column;
         }
         
         .zoom-container {
             grid-area: zoom;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         
         .stitch-container {
@@ -85,7 +89,19 @@
             background-color: white;
             border: 1px solid #e0e0e0;
             width: 100%;
+        }
+        
+        #grid-canvas {
             aspect-ratio: 1/1;
+        }
+        
+        #zoom-canvas {
+            aspect-ratio: 1/1;
+        }
+        
+        #stitch-canvas {
+            aspect-ratio: 1/1;
+            max-height: 300px;
         }
         
         .canvas-label {
@@ -95,17 +111,26 @@
             font-size: 0.95em;
         }
         
-        button, input[type="color"], input[type="file"] {
+        /* Button Styles */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        
+        button {
             font-family: 'Optima', sans-serif;
-            padding: 7px 10px;
-            margin: 4px 0;
-            border-radius: 5px;
+            padding: 8px 12px;
             border: none;
+            border-radius: 5px;
             background-color: #ffb3c6;
             color: #333;
             cursor: pointer;
             font-size: 0.9em;
             transition: all 0.2s;
+            flex-grow: 1;
+            min-width: 60px;
         }
         
         button:hover {
@@ -117,31 +142,78 @@
             color: white;
         }
         
+        button.primary {
+            background-color: #fb6f92;
+            color: white;
+        }
+        
+        /* Input Styles */
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        
         input[type="color"] {
-            padding: 2px;
+            width: 30px;
             height: 30px;
-            width: 40px;
+            padding: 2px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         
         input[type="number"], input[type="range"] {
-            padding: 5px;
+            padding: 6px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-family: 'Optima', sans-serif;
-            width: 50px;
         }
         
+        input[type="number"] {
+            width: 30px;
+        }
+        
+        input[type="range"] {
+            flex-grow: 1;
+        }
+        
+        /* File Upload */
+        .file-upload {
+            margin-bottom: 12px;
+        }
+        
+        #image-upload {
+            display: none;
+        }
+        
+        .file-label {
+            display: block;
+            padding: 8px 12px;
+            background-color: #fb6f92;
+            color: white;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .file-label:hover {
+            background-color: #f54977;
+        }
+        
+        /* Palette Styles */
         .palette-colors {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            gap: 6px;
             margin: 10px 0;
         }
         
         .color-swatch {
-            width: 25px;
-            height: 25px;
-            border-radius: 3px;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.2s;
@@ -156,56 +228,15 @@
             transform: scale(1.1);
         }
         
-        .tool-row {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 6px;
-            align-items: center;
-        }
-        
-        .file-input-label {
-            display: block;
-            padding: 7px 10px;
-            background-color: #ffb3c6;
-            color: #333;
-            border-radius: 5px;
-            text-align: center;
-            cursor: pointer;
-            margin: 6px 0;
-            font-size: 0.9em;
-            transition: all 0.2s;
-        }
-        
-        .file-input-label:hover {
-            background-color: #ff8fab;
-        }
-        
-        #image-upload {
-            display: none;
-        }
-        
-        .size-controls {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        
+        /* Navigation Info */
         .navigation-info {
-            margin-top: 10px;
             padding: 10px;
-            background-color: #f8f8f8;
-            border-radius: 5px;
+            background-color: #f0f0f0;
+            border-radius: 6px;
+            margin-top: 10px;
         }
         
-        #instructions-output {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f8f8f8;
-            border-radius: 5px;
-        }
-        
+        /* Legend */
         .heatmap-legend {
             display: flex;
             justify-content: center;
@@ -217,28 +248,52 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            font-size: 0.9em;
         }
         
         .legend-color {
-            width: 15px;
-            height: 15px;
+            width: 16px;
+            height: 16px;
             border: 1px solid #ccc;
+            border-radius: 3px;
         }
     </style>
 </head>
 <body>
+    <h1 class="app-title">Screaming Crocheting</h1>
+    
     <div class="app-container">
-        <h1 class="app-title">Screaming Crocheting</h1>
-        
         <!-- Left Control Panel -->
         <div class="control-panel">
-            <!-- Reset & Background -->
+            <!-- Canvas Controls -->
             <div class="control-group">
-                <h3>Canvas Controls</h3>
-                <button id="reset-all">Reset All</button>
-                <div class="tool-row">
+                <h3>Grid Setup</h3>
+                <div class="input-group">
+                    <input type="number" id="grid-width" min="8" max="128" value="64">
+                    <span>x</span>
+                    <input type="number" id="grid-height" min="8" max="128" value="64">
+                    <button id="resize-grid">set size</button>
+                </div>
+                <div class="input-group">
                     <input type="color" id="bg-color-picker" value="#ffffff">
-                    <button id="apply-bg-color">Set Background</button>
+                    <button id="apply-bg-color">set color</button>
+                </div>
+                <div class="button-group">
+                    <button id="reset-all" class="primary">Reset All</button>
+                </div>
+            </div>
+
+            <!-- Image Controls -->
+            <div class="control-group">
+                <h3>Image</h3>
+                <div class="file-upload">
+                    <label for="image-upload" class="file-label">Load Image</label>
+                    <input type="file" id="image-upload" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <span>Colors:</span>
+                    <input type="number" id="color-count" min="2" max="20" value="5">
+                    <button id="update-colors">Update</button>
                 </div>
             </div>
             
@@ -246,61 +301,38 @@
             <div class="control-group">
                 <h3>Color Palette</h3>
                 <div class="palette-colors" id="palette-colors"></div>
-                <div class="tool-row">
+                <div class="input-group">
                     <input type="color" id="color-picker" value="#000000">
-                    <button id="add-color">Add Color</button>
-                </div>
-                <button id="update-color">Update Selected</button>
-            </div>
-            
-            <!-- Image & Grid -->
-            <div class="control-group">
-                <h3>Image & Grid</h3>
-                <label for="image-upload" class="file-input-label">Load Image</label>
-                <input type="file" id="image-upload" accept="image/*">
-                
-                <div class="tool-row">
-                    <div class="tool-row">
-                        <span>#cols:</span>
-                        <input type="number" id="color-count" min="2" max="20" value="5">
-                        <button id="update-colors">update</button>
-                    </div>
-                    
-                </div>
-                
-                <div class="tool-row">
-                    <span>Grid:</span>
-                    <input type="number" id="grid-width" min="8" max="128" value="64">
-                    <span>x</span>
-                    <input type="number" id="grid-height" min="8" max="128" value="64">
-                    <button id="resize-grid">Apply</button>
+                    <button id="add-color">Add</button>
+                    <button id="update-color">Update</button>
                 </div>
             </div>
             
-            <!-- Tools -->
+            <!-- Paint Tools -->
             <div class="control-group">
                 <h3>Tools</h3>
-                <div class="tool-row">
+                <div class="button-group">
                     <button id="brush-tool" class="active">Brush</button>
                     <button id="eraser-tool">Eraser</button>
                 </div>
-                <div class="tool-row">
+                <div class="input-group">
                     <span>Size:</span>
                     <input type="range" id="brush-size" min="1" max="8" value="1">
                     <span id="brush-size-value">1</span>
                 </div>
-                <div class="tool-row">
+                <div class="button-group">
                     <button id="undo-btn">Undo</button>
                     <button id="redo-btn">Redo</button>
                 </div>
             </div>
             
-            
             <!-- Instructions -->
             <div class="control-group">
                 <h3>Instructions</h3>
-                <button id="generate-instructions">Generate Instructions</button>
-                <div id="instructions-output"></div>
+                <div class="button-group">
+                    <button id="generate-instructions">Generate</button>
+                </div>
+                <div id="instructions-output" style="margin-top: 10px;"></div>
             </div>
         </div>
         
@@ -310,26 +342,24 @@
             <canvas id="grid-canvas"></canvas>
         </div>
         
-        <!-- Zoom Canvas -->
+        <!-- Right Panel -->
         <div class="zoom-container">
             <div class="canvas-label">Zoom Preview (4x)</div>
             <canvas id="zoom-canvas"></canvas>
-
-            <!-- Navigation -->
+            
             <div class="control-group">
                 <h3>Navigation</h3>
-                <div class="tool-row">
-                    <button id="prev-stitch">Previous (←)</button>
-                    <button id="next-stitch">Next (→)</button>
+                <div class="button-group">
+                    <button id="prev-stitch">← Previous</button>
+                    <button id="next-stitch">Next →</button>
                 </div>
                 <div class="navigation-info">
                     <div>Current: <span id="current-stitch">(0,0)</span></div>
                     <div>Color: <span id="current-color">#000000</span></div>
-                    <div>Next Row Color: <span id="next-row-color">#000000</span></div>
+                    <div>Next Row: <span id="next-row-color">#000000</span></div>
                 </div>
             </div>
             
-
             <div class="canvas-label">Current Stitch Pattern</div>
             <canvas id="stitch-canvas"></canvas>
             <div class="heatmap-legend">
@@ -347,7 +377,6 @@
                 </div>
             </div>
         </div>
-        
     </div>
 
     <script src="script.js"></script>

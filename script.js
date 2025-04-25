@@ -3,6 +3,7 @@ class CrochetPatternTool {
         this.gridWidth = 64;
         this.gridHeight = 64;
         this.cellSize = 10;
+        
         this.palette = ['#FFFFFF', '#fb6f92']; // Default palette (white and black)
         this.activeColorIndex = 1; // Start with black selected
         this.gridData = this.createEmptyGrid();
@@ -96,67 +97,83 @@ class CrochetPatternTool {
         }
     }
 
-    updateStitchVisualization() {
-        if (!this.stitchMatrix || !this.stitchMatrix.length) return;
-        
-        const patternWidth = this.stitchMatrix[0].length;
-        const patternHeight = this.stitchMatrix.length;
-        const scale = Math.min(
-            Math.floor(this.stitchCanvas.width / patternWidth),
-            Math.floor(this.stitchCanvas.height / patternHeight)
-        );
-        
-        // Create off-screen canvas for the pattern
-        const patternCanvas = document.createElement('canvas');
-        patternCanvas.width = patternWidth;
-        patternCanvas.height = patternHeight;
-        const patternCtx = patternCanvas.getContext('2d');
-        const imageData = patternCtx.createImageData(patternWidth, patternHeight);
-        const data = imageData.data;
-        
-        // Get current and next colors
-        const colorIndex = this.gridData[this.currentStitch.y][this.currentStitch.x];
-        const currentColor = colorIndex === 0 ? this.backgroundColor : this.palette[colorIndex];
-        
-        let nextRowColor = this.backgroundColor;
-        if (this.currentStitch.y < this.gridHeight - 1 && this.currentStitch.x < this.gridWidth - 1) {
-            const nextColorIndex = this.gridData[this.currentStitch.y + 1][this.currentStitch.x + 1];
-            nextRowColor = nextColorIndex === 0 ? this.backgroundColor : this.palette[nextColorIndex];
+    prevStitch() {
+        if (this.currentStitch.j > 0) {
+            this.currentStitch.j--;
+        } else if (this.currentStitch.i > 0) {
+            this.currentStitch.j = this.gridWidth - 1;
+            this.currentStitch.i--;
+        }
+        this.updateCurrentStitchDisplay();
+    }
+    
+    nextStitch() {
+        if (this.currentStitch.j < this.gridWidth - 1) {
+            this.currentStitch.j++;
+        } else if (this.currentStitch.i < this.gridHeight - 1) {
+            this.currentStitch.j = 0;
+            this.currentStitch.i++;
+        }
+        this.updateCurrentStitchDisplay();
+    }
+
+
+    getColorWithBoundsCheck(i, j) {
+        // Check if coordinates are out of bounds
+        if (i < 0 || i >= this.gridHeight || j < 0 || j >= this.gridWidth) {
+            return this.backgroundColor;
         }
         
-        // Convert colors to RGB
-        const currentRGB = this.hexToRgb(currentColor);
-        const nextRGB = this.hexToRgb(nextRowColor);
-        const bgRGB = this.hexToRgb('#f0f0f0');
+        const colorIndex = this.gridData[i][j];
+        return colorIndex === 0 ? this.backgroundColor : this.palette[colorIndex];
+    }
+
+    getNeighboringColors(i, j) {
+        return {
+            topLeft: this.getColorWithBoundsCheck(i-1, j),
+            top: this.getColorWithBoundsCheck(i-1, j+1),
+            left: this.getColorWithBoundsCheck(i, j-1),
+            center: this.getColorWithBoundsCheck(i, j),
+            right: this.getColorWithBoundsCheck(i, j+1),
+            bottomLeft: this.getColorWithBoundsCheck(i+1, j-1),
+            bottom: this.getColorWithBoundsCheck(i+1, j)
+        };
+    }
+
+    updateStitchVisualization() {
+        if (!this.stitchMatrix) return;
+        console.info('here')
+        const {i, j} = this.currentStitch;
+        const colors = this.getNeighboringColors(i, j);
+        
+        // Create off-screen canvas
+        const patternCanvas = document.createElement('canvas');
+        patternCanvas.width = this.stitchPattern[0].length;
+        patternCanvas.height = this.stitchPattern.length;
+        const patternCtx = patternCanvas.getContext('2d');
+        const imageData = patternCtx.createImageData(patternCanvas.width, patternCanvas.height);
+        const data = imageData.data;
+        
+        // Color mapping - modify these as needed
+        const colorMap = {
+            1: colors.topLeft,
+            2: colors.top,
+            3: colors.left,
+            4: colors.center,
+            5: colors.right,
+            6: colors.bottomLeft,
+            7: colors.bottom,
+            // Default to background color
+            0: this.backgroundColor
+        };
         
         // Fill image data based on pattern
-        for (let y = 0; y < patternHeight; y++) {
-            for (let x = 0; x < patternWidth; x++) {
-                const idx = (y * patternWidth + x) * 4;
-                let r, g, b;
-                
-                switch (this.stitchMatrix[y][x]) {
-                    case 1: // Current stitch
-                        [r, g, b] = this.hexToRgb('#000000');
-                        break;
-                    case 2: // Next row stitch
-                        [r, g, b] = this.hexToRgb('#90a955');
-                        break;
-                    case 3: // Current color
-                        [r, g, b] = this.hexToRgb('00b4d8');
-                        break;
-                    case 4: // Next row color
-                        [r, g, b] = this.hexToRgb('#48cae4');
-                        break;
-                    case 5: // Next row color
-                        [r, g, b] = this.hexToRgb('#7209b7');
-                        break;    
-                    case 6: // Next row color
-                        [r, g, b] = this.hexToRgb('#e63946');
-                        break;    
-                    default: // Background
-                        [r, g, b] = bgRGB;
-                }
+        for (let y = 0; y < patternCanvas.height; y++) {
+            for (let x = 0; x < patternCanvas.width; x++) {
+                const patternValue = this.stitchPattern[y][x];
+                const color = colorMap[patternValue] || this.backgroundColor;
+                const [r, g, b] = this.hexToRgb(color);
+                const idx = (y * patternCanvas.width + x) * 4;
                 
                 data[idx] = r;     // R
                 data[idx + 1] = g; // G
@@ -165,33 +182,115 @@ class CrochetPatternTool {
             }
         }
         
-        // Put the image data to off-screen canvas
+        // Put the image data and scale it
         patternCtx.putImageData(imageData, 0, 0);
-        
-        // Clear and scale the main stitch canvas
         this.stitchCtx.clearRect(0, 0, this.stitchCanvas.width, this.stitchCanvas.height);
         this.stitchCtx.imageSmoothingEnabled = false;
+        
+        
         this.stitchCtx.drawImage(
             patternCanvas,
-            0, 0, this.stitchCanvas.width, this.stitchCanvas.height
+            0, 0, patternCanvas.width, patternCanvas.height
         );
         
-        // Draw grid lines
-        // this.stitchCtx.strokeStyle = '#ddd';
-        // this.stitchCtx.lineWidth = 1;
-        // for (let x = 0; x <= patternWidth; x++) {
-        //     this.stitchCtx.beginPath();
-        //     this.stitchCtx.moveTo(x * scale, 0);
-        //     this.stitchCtx.lineTo(x * scale, patternHeight * scale);
-        //     this.stitchCtx.stroke();
-        // }
-        // for (let y = 0; y <= patternHeight; y++) {
-        //     this.stitchCtx.beginPath();
-        //     this.stitchCtx.moveTo(0, y * scale);
-        //     this.stitchCtx.lineTo(patternWidth * scale, y * scale);
-        //     this.stitchCtx.stroke();
-        // }
     }
+
+    // updateStitchVisualization() {
+    //     if (!this.stitchMatrix || !this.stitchMatrix.length) return;
+        
+    //     const patternWidth = this.stitchMatrix[0].length;
+    //     const patternHeight = this.stitchMatrix.length;
+    //     const scale = Math.min(
+    //         Math.floor(this.stitchCanvas.width / patternWidth),
+    //         Math.floor(this.stitchCanvas.height / patternHeight)
+    //     );
+        
+    //     // Create off-screen canvas for the pattern
+    //     const patternCanvas = document.createElement('canvas');
+    //     patternCanvas.width = patternWidth;
+    //     patternCanvas.height = patternHeight;
+    //     const patternCtx = patternCanvas.getContext('2d');
+    //     const imageData = patternCtx.createImageData(patternWidth, patternHeight);
+    //     const data = imageData.data;
+        
+    //     // Get current and next colors
+    //     const colorIndex = this.gridData[this.currentStitch.y][this.currentStitch.x];
+    //     const currentColor = colorIndex === 0 ? this.backgroundColor : this.palette[colorIndex];
+        
+    //     let nextRowColor = this.backgroundColor;
+    //     if (this.currentStitch.y < this.gridHeight - 1 && this.currentStitch.x < this.gridWidth - 1) {
+    //         const nextColorIndex = this.gridData[this.currentStitch.y + 1][this.currentStitch.x + 1];
+    //         nextRowColor = nextColorIndex === 0 ? this.backgroundColor : this.palette[nextColorIndex];
+    //     }
+        
+    //     // Convert colors to RGB
+    //     const currentRGB = this.hexToRgb(currentColor);
+    //     const nextRGB = this.hexToRgb(nextRowColor);
+    //     const bgRGB = this.hexToRgb('#f0f0f0');
+        
+    //     // Fill image data based on pattern
+    //     for (let y = 0; y < patternHeight; y++) {
+    //         for (let x = 0; x < patternWidth; x++) {
+    //             const idx = (y * patternWidth + x) * 4;
+    //             let r, g, b;
+                
+    //             switch (this.stitchMatrix[y][x]) {
+    //                 case 1: // Current stitch
+    //                     [r, g, b] = this.hexToRgb('#000000');
+    //                     break;
+    //                 case 2: // Next row stitch
+    //                     [r, g, b] = this.hexToRgb('#90a955');
+    //                     break;
+    //                 case 3: // Current color
+    //                     [r, g, b] = this.hexToRgb('00b4d8');
+    //                     break;
+    //                 case 4: // Next row color
+    //                     [r, g, b] = this.hexToRgb('#48cae4');
+    //                     break;
+    //                 case 5: // Next row color
+    //                     [r, g, b] = this.hexToRgb('#7209b7');
+    //                     break;    
+    //                 case 6: // Next row color
+    //                     [r, g, b] = this.hexToRgb('#e63946');
+    //                     break;    
+    //                 default: // Background
+    //                     [r, g, b] = bgRGB;
+    //             }
+                
+    //             data[idx] = r;     // R
+    //             data[idx + 1] = g; // G
+    //             data[idx + 2] = b; // B
+    //             data[idx + 3] = 255; // Alpha
+    //         }
+    //     }
+        
+    //     // Put the image data to off-screen canvas
+    //     patternCtx.putImageData(imageData, 0, 0);
+        
+    //     // Clear and scale the main stitch canvas
+    //     this.stitchCtx.clearRect(0, 0, this.stitchCanvas.width, this.stitchCanvas.height);
+    //     this.stitchCtx.imageSmoothingEnabled = false;
+    //     this.stitchCtx.drawImage(
+    //         patternCanvas,
+    //         0, 0, this.stitchCanvas.width, this.stitchCanvas.height
+    //     );
+        
+    //     // Draw grid lines
+    //     // this.stitchCtx.strokeStyle = '#ddd';
+    //     // this.stitchCtx.lineWidth = 1;
+    //     // for (let x = 0; x <= patternWidth; x++) {
+    //     //     this.stitchCtx.beginPath();
+    //     //     this.stitchCtx.moveTo(x * scale, 0);
+    //     //     this.stitchCtx.lineTo(x * scale, patternHeight * scale);
+    //     //     this.stitchCtx.stroke();
+    //     // }
+    //     // for (let y = 0; y <= patternHeight; y++) {
+    //     //     this.stitchCtx.beginPath();
+    //     //     this.stitchCtx.moveTo(0, y * scale);
+    //     //     this.stitchCtx.lineTo(patternWidth * scale, y * scale);
+    //     //     this.stitchCtx.stroke();
+    //     // }
+    // }
     
     hexToRgb(hex) {
         // Remove # if present
