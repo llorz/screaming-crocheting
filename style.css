@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Optima&display=swap');
+
+body {
+    font-family: 'Optima', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #fafafa;
+}
+
+.app-container {
+    display: grid;
+    grid-template-areas:
+        "title title title"
+        "controls canvas zoom"
+        "controls stitch stitch";
+    grid-template-columns: 300px 1fr 300px;
+    grid-gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.app-title {
+    grid-area: title;
+    text-align: center;
+    font-size: 2.8em;
+    color: #fb6f92;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.control-panel {
+    grid-area: controls;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.control-group {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.control-group:last-child {
+    border-bottom: none;
+}
+
+.control-group h3 {
+    margin-top: 0;
+    color: #555;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+.canvas-container, .zoom-container, .stitch-container {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.canvas-container {
+    grid-area: canvas;
+}
+
+.zoom-container {
+    grid-area: zoom;
+}
+
+.stitch-container {
+    grid-area: stitch;
+}
+
+#grid-canvas, #zoom-canvas, #stitch-canvas {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    width: 100%;
+    aspect-ratio: 1/1;
+}
+
+.canvas-label {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #666;
+    font-size: 0.95em;
+}
+
+button, input[type="color"], input[type="file"] {
+    font-family: 'Optima', sans-serif;
+    padding: 7px 10px;
+    margin: 4px 0;
+    border-radius: 5px;
+    border: none;
+    background-color: #ffb3c6;
+    color: #333;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background-color: #ff8fab;
+}
+
+button.active {
+    background-color: #a7c957;
+    color: white;
+}
+
+input[type="color"] {
+    padding: 2px;
+    height: 30px;
+    width: 40px;
+}
+
+input[type="number"], input[type="range"] {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Optima', sans-serif;
+    width: 50px;
+}
+
+.palette-colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.color-swatch {
+    width: 25px;
+    height: 25px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid #ddd; /* Add border to make white visible */
+    transition: all 0.2s;
+    box-sizing: border-box; /* Ensure border is included in dimensions */
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+    border-color: #999; /* Darker border on hover */
+}
+
+.color-swatch.active {
+    border-color: #333;
+    transform: scale(1.1);
+    border-width: 2px; /* Thicker border for active */
+}
+
+
+
+.tool-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    align-items: center;
+}
+
+.file-input-label {
+    display: block;
+    padding: 7px 10px;
+    background-color: #ffb3c6;
+    color: #333;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    margin: 6px 0;
+    font-size: 0.9em;
+    transition: all 0.2s;
+}
+
+.file-input-label:hover {
+    background-color: #ff8fab;
+}
+
+#image-upload, #stitch-upload {
+    display: none;
+}
+
+.size-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.navigation-info {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+}
+
+#instructions-output {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+}
+
+/* Zoom container improvements */
+.zoom-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Add more spacing between sections */
+}
+
+.navigation-section {
+    margin-top: 10px;
+    padding: 15px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+}
+
+.navigation-section h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navigation-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom:

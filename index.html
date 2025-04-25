@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screaming Crocheting</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Optima&display=swap');
+        
+        body {
+            font-family: 'Optima', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+        
+        .app-container {
+            display: grid;
+            grid-template-areas:
+                "title title title"
+                "controls canvas zoom"
+                "controls stitch stitch";
+            grid-template-columns: 300px 1fr 300px;
+            grid-gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .app-title {
+            grid-area: title;
+            text-align: center;
+            font-size: 2.8em;
+            color: #fb6f92;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .control-panel {
+            grid-area: controls;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .control-group:last-child {
+            border-bottom: none;
+        }
+        
+        .control-group h3 {
+            margin-top: 0;
+            color: #555;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .canvas-container, .zoom-container, .stitch-container {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .canvas-container {
+            grid-area: canvas;
+        }
+        
+        .zoom-container {
+            grid-area: zoom;
+        }
+        
+        .stitch-container {
+            grid-area: stitch;
+        }
+        
+        #grid-canvas, #zoom-canvas, #stitch-canvas {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            width: 100%;
+            aspect-ratio: 1/1;
+        }
+        
+        .canvas-label {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        button, input[type="color"], input[type="file"] {
+            font-family: 'Optima', sans-serif;
+            padding: 7px 10px;
+            margin: 4px 0;
+            border-radius: 5px;
+            border: none;
+            background-color: #ffb3c6;
+            color: #333;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background-color: #ff8fab;
+        }
+        
+        button.active {
+            background-color: #a7c957;
+            color: white;
+        }
+        
+        input[type="color"] {
+            padding: 2px;
+            height: 30px;
+            width: 40px;
+        }
+        
+        input[type="number"], input[type="range"] {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Optima', sans-serif;
+            width: 50px;
+        }
+        
+        .palette-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .color-swatch {
+            width: 25px;
+            height: 25px;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-swatch.active {
+            border-color: #333;
+            transform: scale(1.1);
+        }
+        
+        .tool-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 7px 10px;
+            background-color: #ffb3c6;
+            color: #333;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            margin: 6px 0;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        
+        .file-input-label:hover {
+            background-color: #ff8fab;
+        }
+        
+        #image-upload {
+            display: none;
+        }
+        
+        .size-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .navigation-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+        
+        #instructions-output {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+        
+        .heatmap-legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1 class="app-title">Screaming Crocheting</h1>
+        
+        <!-- Left Control Panel -->
+        <div class="control-panel">
+            <!-- Reset & Background -->
+            <div class="control-group">
+                <h3>Canvas Controls</h3>
+                <button id="reset-all">Reset All</button>
+                <div class="tool-row">
+                    <input type="color" id="bg-color-picker" value="#ffffff">
+                    <button id="apply-bg-color">Set Background</button>
+                </div>
+            </div>
+            
+            <!-- Color Palette -->
+            <div class="control-group">
+                <h3>Color Palette</h3>
+                <div class="palette-colors" id="palette-colors"></div>
+                <div class="tool-row">
+                    <input type="color" id="color-picker" value="#000000">
+                    <button id="add-color">Add Color</button>
+                </div>
+                <button id="update-color">Update Selected</button>
+            </div>
+            
+            <!-- Image & Grid -->
+            <div class="control-group">
+                <h3>Image & Grid</h3>
+                <label for="image-upload" class="file-input-label">Load Image</label>
+                <input type="file" id="image-upload" accept="image/*">
+                
+                <div class="tool-row">
+                    <span>Grid:</span>
+                    <input type="number" id="grid-width" min="8" max="128" value="64">
+                    <span>x</span>
+                    <input type="number" id="grid-height" min="8" max="128" value="64">
+                    <button id="resize-grid">Apply</button>
+                </div>
+            </div>
+            
+            <!-- Tools -->
+            <div class="control-group">
+                <h3>Tools</h3>
+                <div class="tool-row">
+                    <button id="brush-tool" class="active">Brush</button>
+                    <button id="eraser-tool">Eraser</button>
+                </div>
+                <div class="tool-row">
+                    <span>Size:</span>
+                    <input type="range" id="brush-size" min="1" max="8" value="1">
+                    <span id="brush-size-value">1</span>
+                </div>
+                <div class="tool-row">
+                    <button id="undo-btn">Undo</button>
+                    <button id="redo-btn">Redo</button>
+                </div>
+            </div>
+            
+            
+            <!-- Instructions -->
+            <div class="control-group">
+                <h3>Instructions</h3>
+                <button id="generate-instructions">Generate Instructions</button>
+                <div id="instructions-output"></div>
+            </div>
+        </div>
+        
+        <!-- Main Canvas -->
+        <div class="canvas-container">
+            <div class="canvas-label">Working Canvas</div>
+            <canvas id="grid-canvas"></canvas>
+        </div>
+        
+        <!-- Zoom Canvas -->
+        <div class="zoom-container">
+            <div class="canvas-label">Zoom Preview (4x)</div>
+            <canvas id="zoom-canvas"></canvas>
+
+            <!-- Navigation -->
+            <div class="control-group">
+                <h3>Navigation</h3>
+                <div class="tool-row">
+                    <button id="prev-stitch">Previous (←)</button>
+                    <button id="next-stitch">Next (→)</button>
+                </div>
+                <div class="navigation-info">
+                    <div>Current: <span id="current-stitch">(0,0)</span></div>
+                    <div>Color: <span id="current-color">#000000</span></div>
+                    <div>Next Row Color: <span id="next-row-color">#000000</span></div>
+                </div>
+            </div>
+            
+
+            <div class="canvas-label">Current Stitch Pattern</div>
+            <canvas id="stitch-canvas"></canvas>
+            <div class="heatmap-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #fb6f92;"></div>
+                    <span>Current Stitch</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #a7c957;"></div>
+                    <span>Next Row</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #f0f0f0;"></div>
+                    <span>Background</span>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

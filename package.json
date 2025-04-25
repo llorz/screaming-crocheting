@@ -1,0 +1,14 @@
+{
+  "name": "screaming-crochet",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "serve": "vite"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "vite": "^6.3.3"
+  }
+}
