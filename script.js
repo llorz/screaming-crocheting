@@ -98,45 +98,45 @@ class CrochetPatternTool {
     }
 
     prevStitch() {
-        if (this.currentStitch.y > 0) {
-            this.currentStitch.y--;
-        } else if (this.currentStitch.x > 0) {
-            this.currentStitch.y = this.gridWidth - 1;
+        if (this.currentStitch.x > 0) {
             this.currentStitch.x--;
+        } else if (this.currentStitch.y > 0) {
+            this.currentStitch.x = this.gridWidth - 1;
+            this.currentStitch.y--;
         }
         this.updateCurrentStitchDisplay();
     }
     
     nextStitch() {
-        if (this.currentStitch.y < this.gridWidth - 1) {
-            this.currentStitch.y++;
-        } else if (this.currentStitch.x < this.gridHeight - 1) {
-            this.currentStitch.y = 0;
+        if (this.currentStitch.x < this.gridWidth - 1) {
             this.currentStitch.x++;
+        } else if (this.currentStitch.y < this.gridHeight - 1) {
+            this.currentStitch.x = 0;
+            this.currentStitch.y++;
         }
         this.updateCurrentStitchDisplay();
     }
 
-
     getColorWithBoundsCheck(i, j) {
         // Check if coordinates are out of bounds
-        if (i < 0 || i >= this.gridHeight || j < 0 || j >= this.gridWidth) {
+        if (j < 0 || j >= this.gridHeight || i < 0 || i >= this.gridWidth) {
             return this.backgroundColor;
         }
         
-        const colorIndex = this.gridData[i][j];
+        const colorIndex = this.gridData[j][i];
         return colorIndex === 0 ? this.backgroundColor : this.palette[colorIndex];
     }
 
     getNeighboringColors(i, j) {
         return {
-            topLeft: this.getColorWithBoundsCheck(i-1, j),
-            top: this.getColorWithBoundsCheck(i-1, j+1),
-            left: this.getColorWithBoundsCheck(i, j-1),
+            topLeft: this.getColorWithBoundsCheck(i-1, j-1),
+            top: this.getColorWithBoundsCheck(i, j-1), 
+            left: this.getColorWithBoundsCheck(i-1, j),
             center: this.getColorWithBoundsCheck(i, j),
-            right: this.getColorWithBoundsCheck(i, j+1),
-            bottomLeft: this.getColorWithBoundsCheck(i+1, j-1),
-            bottom: this.getColorWithBoundsCheck(i+1, j)
+            right: this.getColorWithBoundsCheck(i+1, j),
+            bottomLeft: this.getColorWithBoundsCheck(i-1, j+1),
+            bottom: this.getColorWithBoundsCheck(i, j+1),
+            bottomRight: this.getColorWithBoundsCheck(i+1, j+1)
         };
     }
 
@@ -155,13 +155,12 @@ class CrochetPatternTool {
         
         // Color mapping - modify these as needed
         const colorMap = {
-            1: colors.topLeft,
-            2: colors.top,
-            3: colors.left,
-            4: colors.center,
-            5: colors.right,
-            6: colors.bottomLeft,
-            7: colors.bottom,
+            1: '#000000',
+            2: colors.bottom,
+            3: colors.bottomRight,
+            4: colors.bottomLeft,
+            5: colors.left,
+            6: colors.center,
             // Default to background color
             0: this.backgroundColor
         };
