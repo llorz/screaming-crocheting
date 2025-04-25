@@ -179,18 +179,12 @@ class CrochetPatternTool {
         this.stitchCtx.clearRect(0, 0, this.stitchCanvas.width, this.stitchCanvas.height);
         this.stitchCtx.imageSmoothingEnabled = false;
         
-        const scale = Math.min(
-            this.stitchCanvas.width / patternCanvas.width,
-            this.stitchCanvas.height / patternCanvas.height
-        );
         
         this.stitchCtx.drawImage(
             patternCanvas,
             0, 0, patternCanvas.width, patternCanvas.height
         );
         
-        // Draw grid lines
-        // this.drawStitchGrid(patternCanvas.width, patternCanvas.height, scale);
     }
 
     // updateStitchVisualization() {
