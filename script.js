@@ -3,6 +3,7 @@ class CrochetPatternTool {
         this.gridWidth = 64;
         this.gridHeight = 64;
         this.cellSize = 10;
+        
         this.palette = ['#FFFFFF', '#fb6f92']; // Default palette (white and black)
         this.activeColorIndex = 1; // Start with black selected
         this.gridData = this.createEmptyGrid();
