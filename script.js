@@ -98,76 +98,107 @@ class CrochetPatternTool {
     }
 
     prevStitch() {
-        if (this.currentStitch.y > 0) {
-            this.currentStitch.y--;
-        } else if (this.currentStitch.x > 0) {
-            this.currentStitch.y = this.gridWidth - 1;
+        if (this.currentStitch.x > 0) {
             this.currentStitch.x--;
+        } else if (this.currentStitch.y > 0) {
+            this.currentStitch.x = this.gridWidth - 1;
+            this.currentStitch.y--;
         }
         this.updateCurrentStitchDisplay();
     }
     
     nextStitch() {
-        if (this.currentStitch.y < this.gridWidth - 1) {
-            this.currentStitch.y++;
-        } else if (this.currentStitch.x < this.gridHeight - 1) {
-            this.currentStitch.y = 0;
+        if (this.currentStitch.x < this.gridWidth - 1) {
             this.currentStitch.x++;
+        } else if (this.currentStitch.y < this.gridHeight - 1) {
+            this.currentStitch.x = 0;
+            this.currentStitch.y++;
         }
         this.updateCurrentStitchDisplay();
     }
 
-
     getColorWithBoundsCheck(i, j) {
         // Check if coordinates are out of bounds
-        if (i < 0 || i >= this.gridHeight || j < 0 || j >= this.gridWidth) {
+        if (j < 0 || j >= this.gridHeight || i < 0 || i >= this.gridWidth) {
             return this.backgroundColor;
         }
         
-        const colorIndex = this.gridData[i][j];
+        const colorIndex = this.gridData[j][i];
         return colorIndex === 0 ? this.backgroundColor : this.palette[colorIndex];
     }
 
     getNeighboringColors(i, j) {
         return {
+<<<<<<< HEAD
             prev: this.getColorWithBoundsCheck(i-1, j),
             prev_nextrow: this.getColorWithBoundsCheck(i-1, j+1),
             curr: this.getColorWithBoundsCheck(i, j),
             curr_nextrow: this.getColorWithBoundsCheck(i, j+1),
             next: this.getColorWithBoundsCheck(i+1, j),
             next_nextrow: this.getColorWithBoundsCheck(i+1, j+1)
+=======
+            topLeft: this.getColorWithBoundsCheck(i-1, j-1),
+            top: this.getColorWithBoundsCheck(i, j-1), 
+            left: this.getColorWithBoundsCheck(i-1, j),
+            center: this.getColorWithBoundsCheck(i, j),
+            right: this.getColorWithBoundsCheck(i+1, j),
+            bottomLeft: this.getColorWithBoundsCheck(i-1, j+1),
+            bottom: this.getColorWithBoundsCheck(i, j+1),
+            bottomRight: this.getColorWithBoundsCheck(i+1, j+1)
+>>>>>>> a2d257d435f9453d386ce9079714d49c5ac19de5
         };
     }
 
     updateStitchVisualization() {
         if (!this.stitchMatrix) return;
-        console.info('here')
+        
+        // Downsample the stitch matrix to match canvas dimensions
+        const targetWidth = Math.min(this.stitchCanvas.width, this.stitchMatrix[0].length);
+        const targetHeight = Math.min(this.stitchCanvas.height, this.stitchMatrix.length);
+        const scaleX = this.stitchMatrix[0].length / targetWidth;
+        const scaleY = this.stitchMatrix.length / targetHeight;
+        
         const colors = this.getNeighboringColors(this.currentStitch.x, this.currentStitch.y);
         
-        // Create off-screen canvas
+        // Create off-screen canvas at target size
         const patternCanvas = document.createElement('canvas');
-        patternCanvas.width = this.stitchMatrix[0].length;
-        patternCanvas.height = this.stitchMatrix.length;
+        // Make intermediate canvas larger for smoother downscaling
+        patternCanvas.width = targetWidth * 4;
+        patternCanvas.height = targetHeight * 4;
         const patternCtx = patternCanvas.getContext('2d');
+        patternCtx.imageSmoothingEnabled = true; // Enable antialiasing
         const imageData = patternCtx.createImageData(patternCanvas.width, patternCanvas.height);
         const data = imageData.data;
         
         // Color mapping - modify these as needed
         const colorMap = {
+<<<<<<< HEAD
     
             3: colors.next_nextrow,
             2: colors.curr_nextrow,
             6: colors.curr,
             4: colors.prev_nextrow,
             5: colors.prev,
+=======
+            1: '#000000',
+            2: colors.bottom,
+            3: colors.bottomRight,
+            4: colors.bottomLeft,
+            5: colors.left,
+            6: colors.center,
+>>>>>>> a2d257d435f9453d386ce9079714d49c5ac19de5
             // Default to background color
             1: '#000000'
         };
         
-        // Fill image data based on pattern
+        // Fill image data based on downsampled pattern
         for (let y = 0; y < patternCanvas.height; y++) {
             for (let x = 0; x < patternCanvas.width; x++) {
-                const patternValue = this.stitchMatrix[y][x];
+                // Sample from original matrix using scaled coordinates
+                const srcX = Math.floor(x * scaleX / 4);
+                const srcY = Math.floor(y * scaleY / 4);
+                const patternValue = this.stitchMatrix[srcY][srcX];
+                
                 const color = colorMap[patternValue] || this.backgroundColor;
                 const [r, g, b] = this.hexToRgb(color);
                 const idx = (y * patternCanvas.width + x) * 4;
@@ -179,17 +210,29 @@ class CrochetPatternTool {
             }
         }
         
-        // Put the image data and scale it
+        // Put the image data and scale it down smoothly
         patternCtx.putImageData(imageData, 0, 0);
-        this.stitchCtx.clearRect(0, 0, this.stitchCanvas.width, this.stitchCanvas.height);
-        this.stitchCtx.imageSmoothingEnabled = false;
         
+        // Create a second canvas for final smooth downscaling
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = targetWidth;
+        finalCanvas.height = targetHeight;
+        const finalCtx = finalCanvas.getContext('2d');
+        finalCtx.imageSmoothingEnabled = true;
+        finalCtx.imageSmoothingQuality = 'high';
+        
+        // Draw downscaled version with antialiasing
+        finalCtx.drawImage(patternCanvas, 0, 0, targetWidth, targetHeight);
+        
+        // Clear and draw final result
+        this.stitchCtx.clearRect(0, 0, this.stitchCanvas.width, this.stitchCanvas.height);
+        this.stitchCtx.imageSmoothingEnabled = true;
+        this.stitchCtx.imageSmoothingQuality = 'high';
         
         this.stitchCtx.drawImage(
-            patternCanvas,
+            finalCanvas,
             0, 0, this.stitchCanvas.width, this.stitchCanvas.height
         );
-        
     }
 
     // updateStitchVisualization() {
