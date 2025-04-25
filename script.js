@@ -14,8 +14,16 @@ class CrochetPatternTool {
         this.redoStack = [];
         this.currentStitch = { x: 0, y: 0 };
 
-        this.stitchFileUrl = 'stitch.txt'; // Path to your stitch file
+        // Audio processing properties
+        this.audioContext = null;
+        this.analyser = null;
+        this.microphone = null;
+        this.isListening = false;
+        this.screamThreshold = 0.1; // Adjust this value based on testing
+        this.lastScreamTime = 0;
+        this.screamCooldown = 1000; // 1 second cooldown between screams
 
+        this.stitchFileUrl = 'stitch.txt'; // Path to your stitch file
 
         // Initialize canvases
         this.canvas = document.getElementById('grid-canvas');
@@ -402,6 +410,22 @@ class CrochetPatternTool {
                 this.handleCanvasClick(e);
             }
         });
+
+        // Add voice activation button
+        const voiceActivationBtn = document.createElement('button');
+        voiceActivationBtn.id = 'voice-activation-btn';
+        voiceActivationBtn.textContent = 'Enable Screaming Activation';
+        voiceActivationBtn.addEventListener('click', () => {
+            this.initVoiceActivation();
+            voiceActivationBtn.textContent = 'Scream to activate!';
+            voiceActivationBtn.disabled = true;
+        });
+
+        // Add button to the controls
+        const controls = document.querySelector('.control-panel');
+        if (controls) {
+            controls.appendChild(voiceActivationBtn);
+        }
     }
     
     isMouseInCanvas(e) {
@@ -950,9 +974,66 @@ class CrochetPatternTool {
         this.updateZoomPreview();
     }
     
+    async initVoiceActivation() {
+        try {
+            // Request microphone access
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Create audio context
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = 2048;
+            
+            // Connect microphone to analyser
+            this.microphone = this.audioContext.createMediaStreamSource(stream);
+            this.microphone.connect(this.analyser);
+            
+            // Start processing audio
+            this.isListening = true;
+            this.processAudio();
+            
+            console.log('Voice activation initialized');
+        } catch (error) {
+            console.error('Error initializing voice activation:', error);
+        }
+    }
 
+    processAudio() {
+        if (!this.isListening) return;
 
+        const bufferLength = this.analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        this.analyser.getByteFrequencyData(dataArray);
 
+        // Calculate average volume
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i];
+        }
+        const averageVolume = sum / bufferLength;
+        const normalizedVolume = averageVolume / 255;
+
+        // Check for scream
+        if (normalizedVolume > this.screamThreshold) {
+            const now = Date.now();
+            if (now - this.lastScreamTime > this.screamCooldown) {
+                this.lastScreamTime = now;
+                this.handleScream();
+            }
+        }
+
+        // Continue processing
+        requestAnimationFrame(() => this.processAudio());
+    }
+
+    handleScream() {
+        console.log('Scream detected!');
+        // Trigger the next button click
+        const nextButton = document.getElementById('next-stitch');
+        if (nextButton) {
+            nextButton.click();
+        }
+    }
 }
 
 // Initialize the tool when DOM is loaded
