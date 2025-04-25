@@ -130,13 +130,12 @@ class CrochetPatternTool {
 
     getNeighboringColors(i, j) {
         return {
-            topLeft: this.getColorWithBoundsCheck(i-1, j),
-            top: this.getColorWithBoundsCheck(i-1, j+1),
-            left: this.getColorWithBoundsCheck(i, j-1),
-            center: this.getColorWithBoundsCheck(i, j),
-            right: this.getColorWithBoundsCheck(i, j+1),
-            bottomLeft: this.getColorWithBoundsCheck(i+1, j-1),
-            bottom: this.getColorWithBoundsCheck(i+1, j)
+            prev: this.getColorWithBoundsCheck(i-1, j),
+            prev_nextrow: this.getColorWithBoundsCheck(i-1, j+1),
+            curr: this.getColorWithBoundsCheck(i, j),
+            curr_nextrow: this.getColorWithBoundsCheck(i, j+1),
+            next: this.getColorWithBoundsCheck(i+1, j),
+            next_nextrow: this.getColorWithBoundsCheck(i+1, j+1)
         };
     }
 
@@ -155,15 +154,14 @@ class CrochetPatternTool {
         
         // Color mapping - modify these as needed
         const colorMap = {
-            1: colors.topLeft,
-            2: colors.top,
-            3: colors.left,
-            4: colors.center,
-            5: colors.right,
-            6: colors.bottomLeft,
-            7: colors.bottom,
+    
+            3: colors.next_nextrow,
+            2: colors.curr_nextrow,
+            6: colors.curr,
+            4: colors.prev_nextrow,
+            5: colors.prev,
             // Default to background color
-            0: this.backgroundColor
+            1: '#000000'
         };
         
         // Fill image data based on pattern
