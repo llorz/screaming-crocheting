@@ -98,21 +98,21 @@ class CrochetPatternTool {
     }
 
     prevStitch() {
-        if (this.currentStitch.j > 0) {
-            this.currentStitch.j--;
-        } else if (this.currentStitch.i > 0) {
-            this.currentStitch.j = this.gridWidth - 1;
-            this.currentStitch.i--;
+        if (this.currentStitch.y > 0) {
+            this.currentStitch.y--;
+        } else if (this.currentStitch.x > 0) {
+            this.currentStitch.y = this.gridWidth - 1;
+            this.currentStitch.x--;
         }
         this.updateCurrentStitchDisplay();
     }
     
     nextStitch() {
-        if (this.currentStitch.j < this.gridWidth - 1) {
-            this.currentStitch.j++;
-        } else if (this.currentStitch.i < this.gridHeight - 1) {
-            this.currentStitch.j = 0;
-            this.currentStitch.i++;
+        if (this.currentStitch.y < this.gridWidth - 1) {
+            this.currentStitch.y++;
+        } else if (this.currentStitch.x < this.gridHeight - 1) {
+            this.currentStitch.y = 0;
+            this.currentStitch.x++;
         }
         this.updateCurrentStitchDisplay();
     }
@@ -143,13 +143,12 @@ class CrochetPatternTool {
     updateStitchVisualization() {
         if (!this.stitchMatrix) return;
         console.info('here')
-        const {i, j} = this.currentStitch;
-        const colors = this.getNeighboringColors(i, j);
+        const colors = this.getNeighboringColors(this.currentStitch.x, this.currentStitch.y);
         
         // Create off-screen canvas
         const patternCanvas = document.createElement('canvas');
-        patternCanvas.width = this.stitchPattern[0].length;
-        patternCanvas.height = this.stitchPattern.length;
+        patternCanvas.width = this.stitchMatrix[0].length;
+        patternCanvas.height = this.stitchMatrix.length;
         const patternCtx = patternCanvas.getContext('2d');
         const imageData = patternCtx.createImageData(patternCanvas.width, patternCanvas.height);
         const data = imageData.data;
@@ -170,7 +169,7 @@ class CrochetPatternTool {
         // Fill image data based on pattern
         for (let y = 0; y < patternCanvas.height; y++) {
             for (let x = 0; x < patternCanvas.width; x++) {
-                const patternValue = this.stitchPattern[y][x];
+                const patternValue = this.stitchMatrix[y][x];
                 const color = colorMap[patternValue] || this.backgroundColor;
                 const [r, g, b] = this.hexToRgb(color);
                 const idx = (y * patternCanvas.width + x) * 4;
@@ -190,7 +189,7 @@ class CrochetPatternTool {
         
         this.stitchCtx.drawImage(
             patternCanvas,
-            0, 0, patternCanvas.width, patternCanvas.height
+            0, 0, this.stitchCanvas.width, this.stitchCanvas.height
         );
         
     }
@@ -495,7 +494,8 @@ class CrochetPatternTool {
         document.getElementById('redo-btn').addEventListener('click', this.redo.bind(this));
         
         document.getElementById('generate-instructions').addEventListener('click', this.updateCurrentStitchDisplay.bind(this));
-
+        document.getElementById('next-stitch').addEventListener('click', this.nextStitch.bind(this));
+        document.getElementById('prev-stitch').addEventListener('click', this.prevStitch.bind(this));
         // Canvas interaction
         this.canvas.addEventListener('click', (e) => {
             if (this.isMouseInCanvas(e)) {
