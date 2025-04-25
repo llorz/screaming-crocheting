@@ -142,15 +142,21 @@ class CrochetPatternTool {
 
     updateStitchVisualization() {
         if (!this.stitchMatrix) return;
-        console.info('here')
+        
+        // Downsample the stitch matrix to match canvas dimensions
+        const targetWidth = Math.min(this.stitchCanvas.width, this.stitchMatrix[0].length);
+        const targetHeight = Math.min(this.stitchCanvas.height, this.stitchMatrix.length);
+        const scaleX = this.stitchMatrix[0].length / targetWidth;
+        const scaleY = this.stitchMatrix.length / targetHeight;
+        
         const colors = this.getNeighboringColors(this.currentStitch.x, this.currentStitch.y);
         
-        // Create off-screen canvas
+        // Create off-screen canvas at target size
         const patternCanvas = document.createElement('canvas');
-        patternCanvas.width = this.stitchMatrix[0].length;
-        patternCanvas.height = this.stitchMatrix.length;
+        patternCanvas.width = targetWidth;
+        patternCanvas.height = targetHeight;
         const patternCtx = patternCanvas.getContext('2d');
-        const imageData = patternCtx.createImageData(patternCanvas.width, patternCanvas.height);
+        const imageData = patternCtx.createImageData(targetWidth, targetHeight);
         const data = imageData.data;
         
         // Color mapping - modify these as needed
@@ -165,13 +171,17 @@ class CrochetPatternTool {
             0: this.backgroundColor
         };
         
-        // Fill image data based on pattern
-        for (let y = 0; y < patternCanvas.height; y++) {
-            for (let x = 0; x < patternCanvas.width; x++) {
-                const patternValue = this.stitchMatrix[y][x];
+        // Fill image data based on downsampled pattern
+        for (let y = 0; y < targetHeight; y++) {
+            for (let x = 0; x < targetWidth; x++) {
+                // Sample from original matrix using scaled coordinates
+                const srcX = Math.floor(x * scaleX);
+                const srcY = Math.floor(y * scaleY);
+                const patternValue = this.stitchMatrix[srcY][srcX];
+                
                 const color = colorMap[patternValue] || this.backgroundColor;
                 const [r, g, b] = this.hexToRgb(color);
-                const idx = (y * patternCanvas.width + x) * 4;
+                const idx = (y * targetWidth + x) * 4;
                 
                 data[idx] = r;     // R
                 data[idx + 1] = g; // G
@@ -184,7 +194,6 @@ class CrochetPatternTool {
         patternCtx.putImageData(imageData, 0, 0);
         this.stitchCtx.clearRect(0, 0, this.stitchCanvas.width, this.stitchCanvas.height);
         this.stitchCtx.imageSmoothingEnabled = false;
-        
         
         this.stitchCtx.drawImage(
             patternCanvas,
