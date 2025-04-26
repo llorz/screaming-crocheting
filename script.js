@@ -68,8 +68,8 @@ class CrochetPatternTool {
         const logicalHeight = this.gridHeight * this.cellSize + padding;
         
         // Set canvas size in CSS pixels
-        // this.canvas.style.width = `${logicalWidth}px`;
-        // this.canvas.style.height = `${logicalHeight}px`;
+        this.canvas.style.width = `${logicalWidth}px`;
+        this.canvas.style.height = `${logicalHeight}px`;
         
         // Set canvas size in actual pixels
         this.canvas.width = logicalWidth * dpr;
@@ -612,9 +612,8 @@ class CrochetPatternTool {
         
         
         // Add voice activation button
-        // const voiceActivationBtn = document.createElement('button');
-        // voiceActivationBtn.id = 'voice-activation-btn';
-        // voiceActivationBtn.textContent = 'Enable Screaming Activation';
+        const voiceActivationBtn = document.getElementById('voice-activation-btn');
+        voiceActivationBtn.textContent = 'Enable Screaming Activation';
         voiceActivationBtn.addEventListener('click', () => {
             this.initVoiceActivation();
             voiceActivationBtn.textContent = 'Scream to activate!';
@@ -1187,8 +1186,8 @@ class CrochetPatternTool {
     
     updateCurrentStitchDisplay() {
         // Update position display
-        document.getElementById('current-stitch').textContent = 
-            `(${this.currentStitch.x}, ${this.currentStitch.y})`;
+        // document.getElementById('current-stitch').textContent = 
+        //     `(${this.currentStitch.x}, ${this.currentStitch.y})`;
         
         // Get current color
         const colorIndex = this.gridData[this.currentStitch.y][this.currentStitch.x];
