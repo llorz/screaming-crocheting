@@ -642,18 +642,38 @@ class CrochetPatternTool {
         document.getElementById(`${tool}-tool`).classList.add('active');
     }
     
+    // addColorToPalette() {
+    //     const newColor = document.getElementById('color-picker').value;
+        
+    //     if (!this.palette.includes(newColor)) {
+    //         this.palette.push(newColor);
+    //         this.activeColorIndex = this.palette.length - 1;
+    //         this.updatePaletteUI();
+            
+    //         // Re-process image with new palette if one is loaded
+    //         if (this.loadedImage) {
+    //             this.processImage(this.loadedImage);
+    //         }
+    //     }
+    // }
+    
     addColorToPalette() {
         const newColor = document.getElementById('color-picker').value;
         
+        // Avoid duplicates
         if (!this.palette.includes(newColor)) {
+            // Add the new color while preserving old indices
             this.palette.push(newColor);
-            this.activeColorIndex = this.palette.length - 1;
-            this.updatePaletteUI();
+            this.activeColorIndex = this.palette.length - 1; // Select the new color
             
-            // Re-process image with new palette if one is loaded
-            if (this.loadedImage) {
-                this.processImage(this.loadedImage);
-            }
+            // Re-render to reflect changes
+            this.updatePaletteUI();
+            this.render();
+            this.updateZoomPreview();
+            
+            // Debug
+            console.log(`Added color ${newColor} at index ${this.activeColorIndex}`);
+            console.log("Current palette:", this.palette);
         }
     }
     
@@ -682,7 +702,7 @@ class CrochetPatternTool {
         // Debug: Log the color change
         console.log(`Updated palette index ${this.activeColorIndex} from ${oldColor} to ${newColor}`);
     }
-    
+
 
     updatePaletteUI() {
         const paletteContainer = document.getElementById('palette-colors');
