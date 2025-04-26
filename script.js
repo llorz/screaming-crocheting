@@ -726,8 +726,10 @@ class CrochetPatternTool {
     
     getGridCoordinates(e) {
         const rect = this.canvas.getBoundingClientRect();
-        const x = Math.floor((e.clientX - rect.left) / this.cellSize);
-        const y = Math.floor((e.clientY - rect.top) / this.cellSize);
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const x = Math.floor((e.clientX - rect.left) * scaleX / this.cellSize);
+        const y = Math.floor((e.clientY - rect.top) * scaleY / this.cellSize);
         return {x, y};
     }
     
