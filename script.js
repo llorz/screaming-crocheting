@@ -54,9 +54,26 @@ class CrochetPatternTool {
     }
     
     resizeCanvas() {
-        // Main canvas
-        this.canvas.width = this.gridWidth * this.cellSize;
-        this.canvas.height = this.gridHeight * this.cellSize;
+        // Add padding for coordinates
+        const padding = this.cellSize;
+        
+        // Get device pixel ratio
+        const dpr = window.devicePixelRatio || 1;
+        
+        // Main canvas (add padding for coordinates)
+        const logicalWidth = this.gridWidth * this.cellSize + padding;
+        const logicalHeight = this.gridHeight * this.cellSize + padding;
+        
+        // Set canvas size in CSS pixels
+        // this.canvas.style.width = `${logicalWidth}px`;
+        // this.canvas.style.height = `${logicalHeight}px`;
+        
+        // Set canvas size in actual pixels
+        this.canvas.width = logicalWidth * dpr;
+        this.canvas.height = logicalHeight * dpr;
+        
+        // Scale the context to account for the device pixel ratio
+        this.ctx.scale(dpr, dpr);
         
         // Zoom canvas (4x zoom)
         this.zoomCanvas.width = this.gridWidth * 4;
@@ -728,8 +745,8 @@ class CrochetPatternTool {
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;
         const scaleY = this.canvas.height / rect.height;
-        const x = Math.floor((e.clientX - rect.left) * scaleX / this.cellSize);
-        const y = Math.floor((e.clientY - rect.top) * scaleY / this.cellSize);
+        const x = Math.floor((e.clientX - rect.left) * scaleX / this.cellSize) - 1;
+        const y = Math.floor((e.clientY - rect.top) * scaleY / this.cellSize) - 1;
         return {x, y};
     }
     
@@ -963,7 +980,7 @@ class CrochetPatternTool {
     render() {
         // Clear canvas with background color
         this.ctx.fillStyle = this.backgroundColor;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillRect(this.cellSize, this.cellSize, this.canvas.width, this.canvas.height);
         
         // Draw grid cells
         for (let y = 0; y < this.gridHeight; y++) {
@@ -972,8 +989,8 @@ class CrochetPatternTool {
                 if (colorIndex > 0 && colorIndex < this.palette.length) { // 0 is background
                     this.ctx.fillStyle = this.palette[colorIndex];
                     this.ctx.fillRect(
-                        x * this.cellSize, 
-                        y * this.cellSize, 
+                        (x + 1) * this.cellSize, 
+                        (y + 1) * this.cellSize, 
                         this.cellSize, 
                         this.cellSize
                     );
@@ -982,12 +999,36 @@ class CrochetPatternTool {
                 // Draw grid lines
                 this.ctx.strokeStyle = '#ddd';
                 this.ctx.strokeRect(
-                    x * this.cellSize, 
-                    y * this.cellSize, 
+                    (x + 1) * this.cellSize, 
+                    (y + 1) * this.cellSize, 
                     this.cellSize, 
                     this.cellSize
                 );
             }
+        }
+
+        // Draw coordinates
+        this.ctx.fillStyle = '#666';
+        this.ctx.font = `${Math.max(8, this.cellSize/2)}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        // Draw column numbers
+        for (let x = 0; x < this.gridWidth; x++) {
+            this.ctx.fillText(
+                x.toString(),
+                (x + 1) * this.cellSize + this.cellSize/2,
+                this.cellSize/2
+            );
+        }
+
+        // Draw row numbers
+        for (let y = 0; y < this.gridHeight; y++) {
+            this.ctx.fillText(
+                y.toString(),
+                this.cellSize/2,
+                (y + 1) * this.cellSize + this.cellSize/2
+            );
         }
 
         // Highlight current stitch position
@@ -995,8 +1036,8 @@ class CrochetPatternTool {
             this.ctx.strokeStyle = '#fb6f92'; // Pink color for highlight
             this.ctx.lineWidth = 2;
             this.ctx.strokeRect(
-                this.currentStitch.x * this.cellSize,
-                this.currentStitch.y * this.cellSize,
+                (this.currentStitch.x + 1) * this.cellSize,
+                (this.currentStitch.y + 1) * this.cellSize,
                 this.cellSize,
                 this.cellSize
             );
