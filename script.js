@@ -595,9 +595,9 @@ class CrochetPatternTool {
         
         
         // Add voice activation button
-        const voiceActivationBtn = document.createElement('button');
-        voiceActivationBtn.id = 'voice-activation-btn';
-        voiceActivationBtn.textContent = 'Enable Screaming Activation';
+        // const voiceActivationBtn = document.createElement('button');
+        // voiceActivationBtn.id = 'voice-activation-btn';
+        // voiceActivationBtn.textContent = 'Enable Screaming Activation';
         voiceActivationBtn.addEventListener('click', () => {
             this.initVoiceActivation();
             voiceActivationBtn.textContent = 'Scream to activate!';
