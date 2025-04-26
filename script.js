@@ -412,10 +412,10 @@ class CrochetPatternTool {
     
 
     updateStitchInputs() {
-        // document.getElementById('stitch-row').value = this.currentStitch.i;
-        // document.getElementById('stitch-col').value = this.currentStitch.j;
-        // document.getElementById('stitch-row').max = this.maxRowIndex;
-        // document.getElementById('stitch-col').max = this.maxColIndex;
+        document.getElementById('stitch-row').value = this.currentStitch.y;
+        document.getElementById('stitch-col').value = this.currentStitch.x;
+        document.getElementById('stitch-row').max = this.maxRowIndex;
+        document.getElementById('stitch-col').max = this.maxColIndex;
     }
     
     goToStitch() {
@@ -425,8 +425,8 @@ class CrochetPatternTool {
         if (isNaN(row) || isNaN(col)) return;
         
         // Clamp values to grid bounds
-        this.currentStitch.i = Math.max(0, Math.min(this.maxRowIndex, row));
-        this.currentStitch.j = Math.max(0, Math.min(this.maxColIndex, col));
+        this.currentStitch.y = Math.max(0, Math.min(this.maxRowIndex, row));
+        this.currentStitch.x = Math.max(0, Math.min(this.maxColIndex, col));
         
         this.updateStitchInputs();
         this.updateCurrentStitchDisplay();
@@ -435,16 +435,16 @@ class CrochetPatternTool {
     navigateStitch(direction) {
         switch (direction) {
             case 'up':
-                this.currentStitch.i = Math.max(0, this.currentStitch.i - 1);
+                this.currentStitch.y = Math.max(0, this.currentStitch.y - 1);
                 break;
             case 'down':
-                this.currentStitch.i = Math.min(this.maxRowIndex, this.currentStitch.i + 1);
+                this.currentStitch.y = Math.min(this.maxRowIndex, this.currentStitch.y + 1);
                 break;
             case 'left':
-                this.currentStitch.j = Math.max(0, this.currentStitch.j - 1);
+                this.currentStitch.x = Math.max(0, this.currentStitch.x - 1);
                 break;
             case 'right':
-                this.currentStitch.j = Math.min(this.maxColIndex, this.currentStitch.j + 1);
+                this.currentStitch.x = Math.min(this.maxColIndex, this.currentStitch.x + 1);
                 break;
         }
         this.updateStitchInputs();
@@ -593,8 +593,8 @@ class CrochetPatternTool {
         document.getElementById('redo-btn').addEventListener('click', this.redo.bind(this));
         
         document.getElementById('generate-instructions').addEventListener('click', this.updateCurrentStitchDisplay.bind(this));
-        document.getElementById('next-stitch').addEventListener('click', this.nextStitch.bind(this));
-        document.getElementById('prev-stitch').addEventListener('click', this.prevStitch.bind(this));
+        // document.getElementById('next-stitch').addEventListener('click', this.nextStitch.bind(this));
+        // document.getElementById('prev-stitch').addEventListener('click', this.prevStitch.bind(this));
 
         
         document.getElementById('save-project').addEventListener('click', () => this.saveProject());
@@ -622,8 +622,8 @@ class CrochetPatternTool {
         document.getElementById('next-stitch').addEventListener('click', () => this.navigateStitch('right'));
         
         // Input changes
-        document.getElementById('stitch-row').addEventListener('change', () => this.goToStitch());
-        document.getElementById('stitch-col').addEventListener('change', () => this.goToStitch());
+        // document.getElementById('stitch-row').addEventListener('change', () => this.goToStitch());
+        // document.getElementById('stitch-col').addEventListener('change', () => this.goToStitch());
         
         
         // Add voice activation button
