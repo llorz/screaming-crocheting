@@ -1043,12 +1043,21 @@ class CrochetPatternTool {
         return bestIndex;
     }
     
+    nextStitchColorIndex(cur_x, cur_y) {
+      if (cur_x < this.gridWidth - 1) {
+        return this.gridData[cur_y][cur_x + 1];
+      } else if (cur_y < this.gridHeight - 1) {
+        return this.gridData[cur_y + 1][0];
+      } 
+      return this.gridData[0][0];
+    }
+
     render() {
         // Clear canvas with background color
         this.ctx.fillStyle = this.backgroundColor;
         this.ctx.fillRect(this.cellSize, this.cellSize, this.canvas.width, this.canvas.height);
         
-        // Draw grid cells
+        // First pass: Draw all cells
         for (let y = 0; y < this.gridHeight; y++) {
             for (let x = 0; x < this.gridWidth; x++) {
                 const colorIndex = this.gridData[y][x];
@@ -1061,9 +1070,21 @@ class CrochetPatternTool {
                         this.cellSize
                     );
                 }
-                
+            }
+        }
+
+        let num_switches = 0;
+        // Second pass: Draw grid lines and highlights
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                const colorIndex = this.gridData[y][x];
+                const next_color_index = this.nextStitchColorIndex(x, y);
+                if (next_color_index != colorIndex) {
+                  num_switches++;
+                }
                 // Draw grid lines
-                this.ctx.strokeStyle = '#ddd';
+                this.ctx.strokeStyle = next_color_index != colorIndex ? 'lightblue' : '#ddd';
+                this.ctx.lineWidth = next_color_index != colorIndex ? 2 : 1;
                 this.ctx.strokeRect(
                     (x + 1) * this.cellSize, 
                     (y + 1) * this.cellSize, 
@@ -1072,6 +1093,7 @@ class CrochetPatternTool {
                 );
             }
         }
+        document.getElementById('num_switch').textContent = num_switches;
 
         // Draw coordinates
         this.ctx.fillStyle = '#666';
