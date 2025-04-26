@@ -518,6 +518,11 @@ class CrochetPatternTool {
         document.getElementById('generate-instructions').addEventListener('click', this.updateCurrentStitchDisplay.bind(this));
         document.getElementById('next-stitch').addEventListener('click', this.nextStitch.bind(this));
         document.getElementById('prev-stitch').addEventListener('click', this.prevStitch.bind(this));
+
+        
+        document.getElementById('save-project').addEventListener('click', () => this.saveProject());
+        document.getElementById('load-project').addEventListener('click', () => this.loadProject());
+
         // Canvas interaction
         this.canvas.addEventListener('click', (e) => {
             if (this.isMouseInCanvas(e)) {
@@ -1142,6 +1147,7 @@ class CrochetPatternTool {
         }
     }
 
+
     processAudio() {
         if (!this.isListening) return;
 
@@ -1178,6 +1184,83 @@ class CrochetPatternTool {
             nextButton.click();
         }
     }
+
+    saveProject() {
+        // Create the project data object
+        const projectData = {
+            version: 1,
+            gridWidth: this.gridWidth,
+            gridHeight: this.gridHeight,
+            backgroundColor: this.backgroundColor,
+            imagePalette: this.imagePalette,
+            userPalette: this.userPalette,
+            gridData: this.gridData,
+            currentStitch: this.currentStitch
+        };
+    
+        // Create a blob and download it
+        const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `crochet-pattern-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    async loadProject() {
+        return new Promise((resolve) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return resolve(false);
+                
+                try {
+                    const contents = await file.text();
+                    const projectData = JSON.parse(contents);
+                    
+                    // Validate the file
+                    if (!projectData.version || !projectData.gridData) {
+                        alert('Invalid project file format');
+                        return resolve(false);
+                    }
+                    
+                    // Update all properties
+                    this.gridWidth = projectData.gridWidth;
+                    this.gridHeight = projectData.gridHeight;
+                    this.backgroundColor = projectData.backgroundColor;
+                    this.imagePalette = projectData.imagePalette || ['#FFFFFF'];
+                    this.userPalette = projectData.userPalette || ['#000000'];
+                    this.gridData = projectData.gridData;
+                    this.currentStitch = projectData.currentStitch || { i: 0, j: 0 };
+                    
+                    // Update UI
+                    document.getElementById('bg-color-picker').value = this.backgroundColor;
+                    this.resizeCanvas();
+                    this.updatePaletteUI();
+                    this.render();
+                    this.updateZoomPreview();
+                    this.updateCurrentStitchDisplay();
+                    
+                    resolve(true);
+                } catch (error) {
+                    console.error('Error loading project:', error);
+                    alert('Error loading project file');
+                    resolve(false);
+                }
+            };
+            
+            input.click();
+        });
+    }
+    
+    
 }
 
 // Initialize the tool when DOM is loaded
