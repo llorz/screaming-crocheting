@@ -17,6 +17,10 @@ class CrochetPatternTool {
 
         // Audio processing properties
         this.audioContext = null;
+        this.voices = window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = () => {
+            this.voices = window.speechSynthesis.getVoices();
+        };
         this.analyser = null;
         this.microphone = null;
         this.isListening = false;
@@ -408,10 +412,10 @@ class CrochetPatternTool {
     
 
     updateStitchInputs() {
-        document.getElementById('stitch-row').value = this.currentStitch.i;
-        document.getElementById('stitch-col').value = this.currentStitch.j;
-        document.getElementById('stitch-row').max = this.maxRowIndex;
-        document.getElementById('stitch-col').max = this.maxColIndex;
+        // document.getElementById('stitch-row').value = this.currentStitch.i;
+        // document.getElementById('stitch-col').value = this.currentStitch.j;
+        // document.getElementById('stitch-row').max = this.maxRowIndex;
+        // document.getElementById('stitch-col').max = this.maxColIndex;
     }
     
     goToStitch() {
@@ -1247,7 +1251,7 @@ class CrochetPatternTool {
         // Get next row color (if exists)
         let nextRowColor = "N/A";
         if (this.currentStitch.y < this.gridHeight - 1 && this.currentStitch.x < this.gridWidth - 1) {
-            const nextColorIndex = this.gridData[this.currentStitch.y + 1][this.currentStitch.x + 1];
+            const nextColorIndex = this.nextStitchColorIndex(this.currentStitch.x, this.currentStitch.y);
             nextRowColor = nextColorIndex === 0 ? this.backgroundColor : this.palette[nextColorIndex];
         }
         document.getElementById('next-row-color').textContent = nextRowColor;
@@ -1255,11 +1259,11 @@ class CrochetPatternTool {
 
         // Check if colors don't match and play warning
         if (nextRowColor !== "N/A" && currentColor !== nextRowColor) {
-            const speech = new SpeechSynthesisUtterance("Switch! Switch!");
-            speech.voice = window.speechSynthesis.getVoices().find(voice => voice.name === "Grandma (French (Canada))");
+            const speech = new SpeechSynthesisUtterance("傻 死 啦! 转变!");
+            speech.voice = this.voices.find(voice => voice.lang === "zh-CN");
 
             speech.rate = 1.2; // Slightly faster speech
-            speech.pitch = 5.8; // Slightly higher pitch
+            speech.pitch = 1; // Slightly higher pitch
             window.speechSynthesis.speak(speech);
         }
         
