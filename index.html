@@ -257,6 +257,55 @@
             border: 1px solid #ccc;
             border-radius: 3px;
         }
+        .navigation-controls {
+            padding: 12px;
+            background-color: #f8f8f8;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .stitch-position {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .stitch-coords {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stitch-coords input {
+            width: 50px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .stitch-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .stitch-buttons button {
+            flex: 1;
+            min-width: 80px;
+            padding: 6px;
+        }
+
+        .stitch-info {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .stitch-info div {
+            margin: 4px 0;
+        }
     </style>
 </head>
 <body>
@@ -326,22 +375,18 @@
                 </div>
             </div>
             
-            <!-- Instructions -->
-            <div class="control-group">
-                <h3>Instructions</h3>
-                <div class="button-group">
-                    <button id="generate-instructions">Generate</button>
-                    <button id="save-project">Save Project</button>
-                    <button id="load-project">Load Project</button>
-                </div>
-                <div id="instructions-output" style="margin-top: 10px;"></div>
-            </div>
         </div>
         
         <!-- Main Canvas -->
         <div class="canvas-container">
             <div class="canvas-label">Working Canvas</div>
             <canvas id="grid-canvas"></canvas>
+
+            <div class="stitch-info">
+                <div>#color switch: <span id="num_switch">Inf</span></div>
+                <div>Current Color: <span id="current-color">#000000</span></div>
+                <div>Next Row Color: <span id="next-row-color">#000000</span></div>
+            </div>
         </div>
         
         <!-- Right Panel -->
@@ -352,20 +397,36 @@
             <div class="canvas-label">Zoom Preview (4x)</div>
             <canvas id="zoom-canvas"></canvas> -->
             
-            <div class="control-group">
-                <h3>Navigation</h3>
-                <div class="button-group">
-                    <button id="prev-stitch">← Previous</button>
-                    <button id="next-stitch">Next →</button>
-                </div>
-                <div class="navigation-info">
-                    <div>Current: <span id="current-stitch">(0,0)</span></div>
-                    <div>Color: <span id="current-color">#000000</span></div>
-                    <div>Next Row: <span id="next-row-color">#000000</span></div>
+            <div class="navigation-controls">
+                <h3>Stitch Navigation</h3>
+                <div class="stitch-position">
+                    <div class="stitch-coords">
+                        <span>Row:</span>
+                        <input type="number" id="stitch-row" min="0" max="63" value="0" step="1">
+                        <span>Column:</span>
+                        <input type="number" id="stitch-col" min="0" max="63" value="0" step="1">
+                        <button id="go-to-stitch">Go</button>
+                    </div>
+                    <div class="stitch-buttons">
+                        <button id="prev-row">↑ Prev Row</button>
+                        <button id="next-row">↓ Next Row</button>
+                        <button id="prev-stitch">← Prev</button>
+                        <button id="next-stitch">Next →</button>
+                    </div>
                 </div>
             </div>
             
-            
+            <!-- Instructions -->
+            <div class="control-group">
+                <h3>Load Project & Generate Instructions</h3>
+                <div class="stitch-buttons">
+                    <button id="save-project">save</button>
+                    <button id="load-project">load</button>
+                    <button id="generate-instructions">generate</button>
+                    <button id="voice-activation-btn">SCREAM OFF</button>
+                </div>
+                <div id="instructions-output" style="margin-top: 10px;"></div>
+            </div>
         </div>
     </div>
 
