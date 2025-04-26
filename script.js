@@ -801,8 +801,8 @@ class CrochetPatternTool {
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;
         const scaleY = this.canvas.height / rect.height;
-        const x = Math.floor((e.clientX - rect.left) * scaleX / this.cellSize) - 1;
-        const y = Math.floor((e.clientY - rect.top) * scaleY / this.cellSize) - 1;
+        const x = Math.floor((e.clientX - rect.left) / this.cellSize) - 1;
+        const y = Math.floor((e.clientY - rect.top)  / this.cellSize) - 1;
         return {x, y};
     }
     
