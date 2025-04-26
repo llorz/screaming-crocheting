@@ -646,6 +646,30 @@ class CrochetPatternTool {
             this.resizeCanvas();
         });
         resizeObserver.observe(this.canvas.parentElement);
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return; // Don't handle if typing in input fields
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    e.preventDefault();
+                    this.navigateStitch('up');
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    this.navigateStitch('down');
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    this.navigateStitch('left');
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    this.navigateStitch('right');
+                    break;
+            }
+        });
     }
     
     isMouseInCanvas(e) {
@@ -693,14 +717,14 @@ class CrochetPatternTool {
         this.palette[this.activeColorIndex] = newColor;
         
         // Reassign pixels that were using this palette index
-        for (let y = 0; y < this.gridHeight; y++) {
-            for (let x = 0; x < this.gridWidth; x++) {
-                if (this.gridData[y][x] === this.activeColorIndex) {
-                    // Keep them assigned to the same index (now with new color)
-                    this.gridData[y][x] = this.activeColorIndex; 
-                }
-            }
-        }
+        // for (let y = 0; y < this.gridHeight; y++) {
+        //     for (let x = 0; x < this.gridWidth; x++) {
+        //         if (this.gridData[y][x] === this.activeColorIndex) {
+        //             // Keep them assigned to the same index (now with new color)
+        //             this.gridData[y][x] = this.activeColorIndex; 
+        //         }
+        //     }
+        // }
         
         this.updatePaletteUI();
         this.render();
@@ -1259,7 +1283,7 @@ class CrochetPatternTool {
 
         // Check if colors don't match and play warning
         if (nextRowColor !== "N/A" && currentColor !== nextRowColor) {
-            const speech = new SpeechSynthesisUtterance("傻 死 啦! 转变!");
+            const speech = new SpeechSynthesisUtterance("傻 死 啦! 换线!");
             speech.voice = this.voices.find(voice => voice.lang === "zh-CN");
 
             speech.rate = 1.2; // Slightly faster speech
