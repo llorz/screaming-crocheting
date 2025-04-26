@@ -1192,8 +1192,7 @@ class CrochetPatternTool {
             gridWidth: this.gridWidth,
             gridHeight: this.gridHeight,
             backgroundColor: this.backgroundColor,
-            imagePalette: this.imagePalette,
-            userPalette: this.userPalette,
+            palette: this.palette,
             gridData: this.gridData,
             currentStitch: this.currentStitch
         };
@@ -1235,8 +1234,7 @@ class CrochetPatternTool {
                     this.gridWidth = projectData.gridWidth;
                     this.gridHeight = projectData.gridHeight;
                     this.backgroundColor = projectData.backgroundColor;
-                    this.imagePalette = projectData.imagePalette || ['#FFFFFF'];
-                    this.userPalette = projectData.userPalette || ['#000000'];
+                    this.palette = projectData.palette || ['#FFFFFF'];
                     this.gridData = projectData.gridData;
                     this.currentStitch = projectData.currentStitch || { i: 0, j: 0 };
                     
