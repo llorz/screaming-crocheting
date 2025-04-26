@@ -94,7 +94,7 @@
             grid-area: stitch;
         }
         
-        #grid-canvas, #zoom-canvas, #stitch-canvas {
+        #grid-canvas, #stitch-canvas {
             background-color: white;
             border: 1px solid #e0e0e0;
             width: 100%;
@@ -107,6 +107,7 @@
         }
         
         #zoom-canvas {
+          border: 1px solid #e0e0e0;
             aspect-ratio: 1/1;
         }
         
@@ -312,10 +313,32 @@
             margin-top: 10px;
             padding-top: 10px;
             border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .stitch-info div {
             margin: 4px 0;
+        }
+
+        .zoom-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        .zoom-preview-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        #zoom-canvas {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #e0e0e0;
         }
     </style>
 </head>
@@ -396,9 +419,15 @@
             </div>
 
             <div class="stitch-info">
-                <div>#color switch: <span id="num_switch">Inf</span></div>
-                <div>Current Color: <span id="current-color">#000000</span></div>
-                <div>Next Row Color: <span id="next-row-color">#000000</span></div>
+                <div>
+                    <div>#color switch: <span id="num_switch">Inf</span></div>
+                    <div>Current Color: <span id="current-color">#000000</span></div>
+                    <div>Next Row Color: <span id="next-row-color">#000000</span></div>
+                </div>
+                <div class="zoom-preview">
+                    <div class="zoom-preview-label">Preview</div>
+                    <canvas id="zoom-canvas"></canvas>
+                </div>
             </div>
         </div>
         
@@ -444,6 +473,5 @@
     </div>
 
     <script src="script.js"></script>
-    <canvas id="zoom-canvas" hidden></canvas>
 </body>
 </html>
