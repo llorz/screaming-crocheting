@@ -657,29 +657,33 @@ class CrochetPatternTool {
         }
     }
     
+
     updateSelectedColor() {
         const newColor = document.getElementById('color-picker').value;
-        this.palette[this.activeColorIndex] = newColor;
-        this.updatePaletteUI();
+        const oldColor = this.palette[this.activeColorIndex]; // Store old color for comparison
         
-        // Update all cells with this color index
+        // Update the palette
+        this.palette[this.activeColorIndex] = newColor;
+        
+        // Reassign pixels that were using this palette index
         for (let y = 0; y < this.gridHeight; y++) {
             for (let x = 0; x < this.gridWidth; x++) {
                 if (this.gridData[y][x] === this.activeColorIndex) {
-                    this.gridData[y][x] = this.activeColorIndex; // Triggers render update
+                    // Keep them assigned to the same index (now with new color)
+                    this.gridData[y][x] = this.activeColorIndex; 
                 }
             }
         }
         
-        // Re-process image with updated palette if one is loaded
-        if (this.loadedImage) {
-            this.processImage(this.loadedImage);
-        }
-        
+        this.updatePaletteUI();
         this.render();
         this.updateZoomPreview();
+        
+        // Debug: Log the color change
+        console.log(`Updated palette index ${this.activeColorIndex} from ${oldColor} to ${newColor}`);
     }
     
+
     updatePaletteUI() {
         const paletteContainer = document.getElementById('palette-colors');
         paletteContainer.innerHTML = '';
