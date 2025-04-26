@@ -57,15 +57,26 @@ class CrochetPatternTool {
     }
     
     resizeCanvas() {
-        // Add padding for coordinates
-        const padding = this.cellSize;
+        // Get the wrapper dimensions
+        const wrapper = this.canvas.parentElement;
+        const wrapperWidth = wrapper.clientWidth;
+        const wrapperHeight = wrapper.clientHeight;
+        
+        // Calculate the maximum possible cell size that fits in the wrapper
+        const maxCellSize = Math.min(
+            Math.floor(wrapperWidth / (this.gridWidth + 1)),
+            Math.floor(wrapperHeight / (this.gridHeight + 1))
+        );
+        
+        // Update cell size to fit the wrapper
+        this.cellSize = maxCellSize;
         
         // Get device pixel ratio
         const dpr = window.devicePixelRatio || 1;
         
-        // Main canvas (add padding for coordinates)
-        const logicalWidth = this.gridWidth * this.cellSize + padding;
-        const logicalHeight = this.gridHeight * this.cellSize + padding;
+        // Calculate canvas dimensions
+        const logicalWidth = (this.gridWidth + 1) * this.cellSize;
+        const logicalHeight = (this.gridHeight + 1) * this.cellSize;
         
         // Set canvas size in CSS pixels
         this.canvas.style.width = `${logicalWidth}px`;
@@ -625,6 +636,12 @@ class CrochetPatternTool {
         if (controls) {
             controls.appendChild(voiceActivationBtn);
         }
+
+        // Add resize observer for the canvas wrapper
+        const resizeObserver = new ResizeObserver(() => {
+            this.resizeCanvas();
+        });
+        resizeObserver.observe(this.canvas.parentElement);
     }
     
     isMouseInCanvas(e) {
@@ -1083,7 +1100,7 @@ class CrochetPatternTool {
                   num_switches++;
                 }
                 // Draw grid lines
-                this.ctx.strokeStyle = next_color_index != colorIndex ? 'lightblue' : '#ddd';
+                this.ctx.strokeStyle = next_color_index != colorIndex ? '#afff19' : '#ddd';
                 this.ctx.lineWidth = next_color_index != colorIndex ? 2 : 1;
                 this.ctx.strokeRect(
                     (x + 1) * this.cellSize, 
