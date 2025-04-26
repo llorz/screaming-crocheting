@@ -34,6 +34,9 @@ class CrochetPatternTool {
         this.stitchCanvas = document.getElementById('stitch-canvas');
         this.stitchCtx = this.stitchCanvas.getContext('2d');
 
+        this.maxRowIndex = this.gridHeight - 1;
+        this.maxColIndex = this.gridWidth - 1;
+
         this.stitchCanvas = document.getElementById('stitch-canvas');
         this.stitchCtx = this.stitchCanvas.getContext('2d');
         this.stitchMatrix = null;
@@ -375,6 +378,48 @@ class CrochetPatternTool {
         }
     }
     
+
+    updateStitchInputs() {
+        document.getElementById('stitch-row').value = this.currentStitch.i;
+        document.getElementById('stitch-col').value = this.currentStitch.j;
+        document.getElementById('stitch-row').max = this.maxRowIndex;
+        document.getElementById('stitch-col').max = this.maxColIndex;
+    }
+    
+    goToStitch() {
+        const row = parseInt(document.getElementById('stitch-row').value);
+        const col = parseInt(document.getElementById('stitch-col').value);
+        
+        if (isNaN(row) || isNaN(col)) return;
+        
+        // Clamp values to grid bounds
+        this.currentStitch.i = Math.max(0, Math.min(this.maxRowIndex, row));
+        this.currentStitch.j = Math.max(0, Math.min(this.maxColIndex, col));
+        
+        this.updateStitchInputs();
+        this.updateCurrentStitchDisplay();
+    }
+    
+    navigateStitch(direction) {
+        switch (direction) {
+            case 'up':
+                this.currentStitch.i = Math.max(0, this.currentStitch.i - 1);
+                break;
+            case 'down':
+                this.currentStitch.i = Math.min(this.maxRowIndex, this.currentStitch.i + 1);
+                break;
+            case 'left':
+                this.currentStitch.j = Math.max(0, this.currentStitch.j - 1);
+                break;
+            case 'right':
+                this.currentStitch.j = Math.min(this.maxColIndex, this.currentStitch.j + 1);
+                break;
+        }
+        this.updateStitchInputs();
+        this.updateCurrentStitchDisplay();
+    }
+
+
     setupZoomPreview() {
         this.canvas.addEventListener('mousemove', (e) => {
             if (!this.isMouseInCanvas(e)) return;
@@ -537,6 +582,18 @@ class CrochetPatternTool {
             }
         });
 
+
+        document.getElementById('go-to-stitch').addEventListener('click', () => this.goToStitch());
+        document.getElementById('prev-row').addEventListener('click', () => this.navigateStitch('up'));
+        document.getElementById('next-row').addEventListener('click', () => this.navigateStitch('down'));
+        document.getElementById('prev-stitch').addEventListener('click', () => this.navigateStitch('left'));
+        document.getElementById('next-stitch').addEventListener('click', () => this.navigateStitch('right'));
+        
+        // Input changes
+        document.getElementById('stitch-row').addEventListener('change', () => this.goToStitch());
+        document.getElementById('stitch-col').addEventListener('change', () => this.goToStitch());
+        
+        
         // Add voice activation button
         const voiceActivationBtn = document.createElement('button');
         voiceActivationBtn.id = 'voice-activation-btn';
